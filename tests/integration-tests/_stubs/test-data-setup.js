@@ -50,7 +50,9 @@ const getUserId = async (playerId) => {
 
 const createGameData = async () => {
     const uid = await getUserId(normalUser.playerId);
-    if (!uid) return;
+    if (!uid) {
+        return;
+    }
     await Results.insertMany(pfResults);
     await Rounds.insertMany(createRoundData(uid));
 };

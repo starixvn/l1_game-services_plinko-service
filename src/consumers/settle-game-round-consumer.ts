@@ -57,7 +57,7 @@ export default class SettleGameRoundConsumer extends BaseSettleGameRoundConsumer
             freeBet: false,
             exchangeRateId: exchangeRates.exId,
         };
-        return await this.roundsRepository.create(newRound);
+        return this.roundsRepository.create(newRound);
     }
 
     async settleBet(round: PlinkoRound) {

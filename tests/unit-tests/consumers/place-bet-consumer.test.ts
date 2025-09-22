@@ -1,5 +1,5 @@
 import PlaceBetConsumer from "../../../src/consumers/place-bet-consumer";
-import { GAME_MODE, NUMBER_OF_ROWS } from "../../../src/constants";
+import { GAME_MODE } from "../../../src/constants";
 import { PlaceBetPayload } from "../../../src/types";
 
 // Mock the base class

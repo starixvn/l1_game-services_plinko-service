@@ -21,7 +21,8 @@ const createChoiceMapper = (): ChoiceMapper => {
     return Object.values(GAME_MODE).reduce((mapper, mode) => {
         mapper[mode] = {};
         for (let rows = NUMBER_OF_ROWS.min; rows <= NUMBER_OF_ROWS.max; rows++) {
-            mapper[mode][rows] = count++;
+            mapper[mode][rows] = count;
+            count++;
         }
         return mapper;
     }, {} as ChoiceMapper);

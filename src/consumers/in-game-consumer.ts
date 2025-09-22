@@ -6,7 +6,7 @@ export default class InGameConsumer extends BaseInGameConsumer {
     declare roundQuery: RoundQuery;
 
     async consume(realPlayer: any) {
-        const { remainingTime, gameConfigs, umMessages } = this.gameData;
+        const { gameConfigs, umMessages } = this.gameData;
         const disabled = !gameConfigs || !gameConfigs.enabled;
         if (disabled) {
             realPlayer.socketClient.emit(this.definition.name, { um: disabled, um_message: umMessages });
