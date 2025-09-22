@@ -10,13 +10,9 @@ export default class ProcessBetQueue extends BaseProcessBetQueue {
     }
 
     async proceedBet(player: any, payload: any) {
-        try {
-            this.gameData.roundId++;
-            await super.proceedBet(player, payload);
-            this.resetBetData(player);
-        } catch (error) {
-            console.error(error);
-        }
+        this.gameData.roundId++;
+        await super.proceedBet(player, payload);
+        this.resetBetData(player);
     }
 
     resetBetData(player: any) {

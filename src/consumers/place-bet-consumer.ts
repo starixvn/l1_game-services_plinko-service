@@ -6,8 +6,8 @@ import { PlaceBetPayload } from "../types";
 
 export default class PlaceBetConsumer extends BasePlaceBetConsumer {
     composeValidationCriteria(player: any, betChoice: any, amount: number, freeBet: boolean, _: number) {
-        const bettingTimeValidationCriteria = this.composeTimeValidationCriteria(player) ?? [];
-        const betAmountValidationCriteria = this.composeBetAmountValidationCriteria(player, betChoice, amount, freeBet) || [];
+        const bettingTimeValidationCriteria = this.composeTimeValidationCriteria(player);
+        const betAmountValidationCriteria = this.composeBetAmountValidationCriteria(player, betChoice, amount, freeBet);
         return bettingTimeValidationCriteria.concat(betAmountValidationCriteria);
     }
 

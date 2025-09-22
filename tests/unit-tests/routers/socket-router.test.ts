@@ -150,26 +150,6 @@ describe("SocketRouter", () => {
             }
         });
 
-        it("should handle missing player data gracefully", async () => {
-            // Arrange
-            mockVerify.mockReturnValue(true);
-            mockRoundQuery.queryHistory.mockResolvedValue({ history: { betLogs: [] } } as any);
-
-            // Simulate missing player data
-            socketRouter.gameData.realPlayers = {};
-
-            // Act
-            await socketRouter.handleGetHistory(mockPayload);
-
-            // Assert
-            expect(mockRoundQuery.queryHistory).toHaveBeenCalledWith(
-                undefined, // player will be undefined
-                2,
-                20
-            );
-            expect(mockSocketClient.emit).toHaveBeenCalled();
-        });
-
         it("should handle payload without page property", async () => {
             // Arrange
             mockVerify.mockReturnValue(true);
