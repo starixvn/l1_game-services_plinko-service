@@ -1,0 +1,24 @@
+module.exports = async () => {
+    return {
+        rootDir: "./",
+        verbose: true,
+        transform: {
+            "^.+\\.ts?$": "ts-jest",
+            "^.+\\.js?$": "babel-jest",
+        },
+        transformIgnorePatterns: [
+            "node_modules/(?!(sc-base-database|sc-common|sc-game-base|sc-base-apis|sc-api-client|jest-auto-fixture|d3-array|internmap|axios|nanoid|crypto-random-string|sc-game-service-integration-utils|sc-game-management-client|prom-client|random-int)/.*)",
+        ],
+        preset: "ts-jest",
+        testEnvironment: "node",
+        testResultsProcessor: "jest-sonar-reporter",
+        reporters: ["default", ["jest-junit", { outputDirectory: "coverage", outputName: "unit-tests.xml" }]],
+        coverageReporters: ["clover", "lcov", "text-summary", "cobertura", "text"],
+        coverageDirectory: "coverage",
+        moduleNameMapper: {
+            "d3-array": "<rootDir>/node_modules/d3-array/dist/d3-array.min.js",
+        },
+        collectCoverageFrom: ["src/{consumers,crons,publishers,helpers}/**/*.ts", "!src/**/*.d.ts",],
+        coveragePathIgnorePatterns: ["/node_modules/", "src/.*\\.(models|configs)\\.ts$", "src/.*/index\\.ts$"],
+    };
+};
