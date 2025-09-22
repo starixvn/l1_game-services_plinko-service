@@ -31,7 +31,6 @@ describe("when place bet", () => {
 
     describe("when place bet with valid data", () => {
         const payload = { amount: 100, gameMode: 0, numberOfRows: 8, clientSeed: "1234" };
-
         it("should return expected data", async () => {
             // Act
             client.emit(eventTypes.bet, payload);
@@ -53,6 +52,29 @@ describe("when place bet", () => {
             expect(typeof finish.settlementResult.multiplier).toBe("number");
             expect(finish.betwin).toBeGreaterThanOrEqual(0);
             expect(finish.amount).toBeGreaterThanOrEqual(0);
+        });
+    });
+
+    describe("when place bet with invalid data", () => {
+        const testCases = [
+            { payload: { gameMode: 0, numberOfRows: 8, clientSeed: "1234" }, expected: { errorCode: "SB1935" } },
+            { payload: { amount: 100, numberOfRows: 8, clientSeed: "1234" }, expected: { errorCode: "SB1935" } },
+            { payload: { amount: 100, gameMode: 0, clientSeed: "1234" }, expected: { errorCode: "SB1935" } },
+            { payload: { amount: 100, gameMode: 0, numberOfRows: 8 }, expected: { errorCode: "SB1935" } },
+            { payload: { amount: 100, gameMode: 4, clientSeed: "1234" }, expected: { errorCode: "SB1935" } },
+            { payload: { amount: 100, gameMode: 0, numberOfRows: 5, clientSeed: "1234" }, expected: { errorCode: "SB1935" } },
+        ];
+        testCases.forEach(({ payload, expected }) => {
+            it(`should return error code`, async () => {
+                // Act
+                client.emit(eventTypes.bet, payload);
+
+                // Assert
+                const data = await client.handleGameEvent((data) => data.notice);
+                const { endBet, notice } = data;
+                expect(endBet).toEqual(-1);
+                expect(notice).toEqual(expected);
+            });
         });
     });
 });
