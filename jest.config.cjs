@@ -15,7 +15,7 @@ module.exports = async () => {
         reporters: ["default", ["jest-junit", { outputDirectory: "coverage", outputName: "unit-tests.xml" }]],
         coverageReporters: ["clover", "lcov", "text-summary", "cobertura", "text"],
         coverageDirectory: "coverage",
-        collectCoverageFrom: ["src/{consumers,crons,publishers,helpers,routers,query-apis}/**/*.ts", "src/constants.ts"],
+        collectCoverageFrom: ["src/{consumers,crons,publishers,helpers,routers,query-apis}/**/*.ts"],
         coveragePathIgnorePatterns: ["/node_modules/", "src/.*\\.(models|configs)\\.ts$", "src/.*/index\\.ts$"],
     };
 };

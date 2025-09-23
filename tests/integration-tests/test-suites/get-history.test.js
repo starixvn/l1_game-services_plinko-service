@@ -27,16 +27,14 @@ describe("when get history", () => {
         driver.close();
     });
 
-    it("should return seeded history with exact values", async () => {
+    it("should receive seeded history with exact values", async () => {
         // Arrange
         driver.sendGetHistoryEvent();
 
         // Act
-        const result = await driver.handleGameEvent((historyData) => historyData.history);
+        const { history } = await driver.handleGameEvent((historyData) => historyData.history);
 
         // Assert
-        const { history } = result;
-
         const seededRoundBetLogs = history.betLogs.filter((betLog) => betLog.roundId === 1 && betLog.name === "NormalUser");
         expect(seededRoundBetLogs.length).toBeGreaterThanOrEqual(1);
 

@@ -1,5 +1,3 @@
-import { CHOICE_MAPPER } from "./constants";
-
 export default {
     id: 145,
     name: "Plinko",
@@ -7,7 +5,7 @@ export default {
         wholeRound: 60,
     },
     choices: [],
-    choicesMapper: CHOICE_MAPPER,
+    choicesMapper: {},
     hedgeBetGroups: [],
     numberOfRoundHistory: 10,
     historyPageSize: 10,

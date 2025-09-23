@@ -31,7 +31,7 @@ const clearAllData = async () => {
 export const createTestData = async () => {
     await connectDatabase();
     await createExchangeRate();
-    await createGameConfig(gameConfig);
+    await createGameConfig();
     const partnerConfig = await createPartnerConfig(game.id);
 
     const currency = await createDummyCurrency(partnerConfig.partnerId, currencyData.code, currencyData.name);

@@ -27,7 +27,7 @@ describe("when getRoundPF", () => {
         client = null;
     });
 
-    it("should return pfInfo", async () => {
+    it("should receive pfInfo", async () => {
         // Arrange
         client.emit("getRoundPF", { roundId: 1 });
         const pfInfo = {
@@ -40,14 +40,14 @@ describe("when getRoundPF", () => {
         };
 
         // Act
-        const actual = await client.handleGameEvent((data) => data.roundPFResult);
+        const { roundPFResult } = await client.handleGameEvent((data) => data.roundPFResult);
 
         // Assert
-        expect(actual.roundPFResult.roundId).toEqual(pfInfo.roundId);
-        expect(actual.roundPFResult.serverSeedHash).toEqual(pfInfo.serverSeedHash);
-        expect(actual.roundPFResult.serverSeed).toEqual(pfInfo.serverSeed);
-        expect(actual.roundPFResult.finalHash).toEqual(pfInfo.finalHash);
-        expect(actual.roundPFResult.mergeSeed).toEqual(pfInfo.mergeSeed);
-        expect(actual.roundPFResult.mergeClientSeed).toEqual(pfInfo.mergeClientSeed);
+        expect(roundPFResult.roundId).toEqual(pfInfo.roundId);
+        expect(roundPFResult.serverSeedHash).toEqual(pfInfo.serverSeedHash);
+        expect(roundPFResult.serverSeed).toEqual(pfInfo.serverSeed);
+        expect(roundPFResult.finalHash).toEqual(pfInfo.finalHash);
+        expect(roundPFResult.mergeSeed).toEqual(pfInfo.mergeSeed);
+        expect(roundPFResult.mergeClientSeed).toEqual(pfInfo.mergeClientSeed);
     });
 });

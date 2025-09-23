@@ -1,6 +1,7 @@
 import { ProcessBetQueue as BaseProcessBetQueue } from "sc-game-base/src/core/crons";
 import SettleGameRoundConsumer from "../consumers/settle-game-round-consumer";
 import { PlaceBetPayload } from "../types";
+import { getChoiceId } from "../helpers/choice-mapper";
 
 export default class ProcessBetQueue extends BaseProcessBetQueue {
     declare settleGameRoundConsumer: SettleGameRoundConsumer;
@@ -24,7 +25,7 @@ export default class ProcessBetQueue extends BaseProcessBetQueue {
             amount: payload.amount,
             gameId: this.definition.id,
             gameRoundId: this.gameData.roundId,
-            choiceId: (this.definition.choicesMapper as Record<number, Record<number, number>>)[payload.gameMode][payload.numberOfRows],
+            choiceId: getChoiceId(payload.gameMode, payload.numberOfRows),
             freeBet: false,
             clientSentTime: payload.time ?? new Date(),
             metadata: {

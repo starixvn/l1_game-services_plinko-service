@@ -62,7 +62,7 @@ export const gameConfig = {
     },
 };
 
-export const createGameConfig = async (gameConfig) => {
+export const createGameConfig = async () => {
     const defaultGameConfig = {
         enabled: true,
         minbet: 1,
@@ -91,6 +91,16 @@ export const createGameConfig = async (gameConfig) => {
 
 export const pfResults = [
     {
+        clientSeeds: [{ name: "OtherUser", seed: "1234" }],
+        roundId: 2,
+        serverSeedHash: "c1c4857aa423eaff150fc6e765cf49241b8766090baf597143637a4f28dd6477",
+        serverSeed: "ww4G8G]ofL8VsAA(4!&vIEZ(l%l[sD9$fZnR@^0K",
+        finalHash: "1377588d03c484407b9904d7935d52d04c9bb8c14766bca6200774ee3ce583f0",
+        mergeSeed: "ww4G8G]ofL8VsAA(4!&vIEZ(l%l[sD9$fZnR@^0K1234",
+        mergeClientSeed: "1234",
+        __v: 0,
+    },
+    {
         clientSeeds: [{ name: "NormalUser", seed: "1234" }],
         roundId: 1,
         serverSeedHash: "c1c4857aa423eaff150fc6e765cf49241b8766090baf597143637a4f28dd6477",
@@ -104,6 +114,28 @@ export const pfResults = [
 
 export const createRoundData = (uid) => {
     return [
+        {
+            id: 2,
+            uid: "otheruser",
+            name: "OtherUser",
+            amount: 100,
+            totalAmount: 100,
+            betwin: 500,
+            odds: gameConfig.plinkoConfig.odds,
+            clientSeed: "1234",
+            currency: "$US",
+            rate: 1,
+            siteId: "111",
+            playerId: 2,
+            operatorId: "dummy-operator-id",
+            paid: true,
+            appType: 1,
+            gameMode: 0,
+            numberOfRows: 8,
+            result: [1, 1, 0, 1, 1, 0, 0, 0],
+            settlementResult: { slotIndex: 4, multiplier: 5 },
+            exchangeRateId: 2089,
+        },
         {
             id: 1,
             uid: uid,

@@ -1,6 +1,7 @@
 import { SettleGameRoundConsumer } from "../../../src/consumers";
 import ProcessBetQueue from "../../../src/crons/process-bet-queue";
 import { PlaceBetPayload } from "../../../src/types";
+import { getChoiceId } from "../../../src/helpers/choice-mapper";
 
 // Mock the base class
 const mockProceedBet = jest.fn();
@@ -34,6 +35,10 @@ jest.mock("../../../src/consumers/settle-game-round-consumer", () => {
     }));
 });
 
+jest.mock("../../../src/helpers/choice-mapper", () => ({
+    getChoiceId: jest.fn(),
+}));
+
 describe("ProcessBetQueue", () => {
     let processBetQueue: ProcessBetQueue;
     let mockSettleGameRoundConsumer: any;
@@ -49,15 +54,12 @@ describe("ProcessBetQueue", () => {
         mockGameData = {
             roundId: 100,
             ingame: {},
+            gameConfigs: { enabled: true, plinkoConfig: { numberOfGameModes: 3 } },
         };
 
         mockDefinition = {
             id: 123,
-            choicesMapper: {
-                0: { 8: 1, 12: 2, 16: 3 }, // LOW mode
-                1: { 8: 4, 12: 5, 16: 6 }, // MEDIUM mode
-                2: { 8: 7, 12: 8, 16: 9 }, // HIGH mode
-            },
+            choicesMapper: {},
             durations: {
                 wholeRound: 30,
             },
@@ -113,32 +115,11 @@ describe("ProcessBetQueue", () => {
     });
 
     describe("formatApiBetInfo", () => {
-        it("should format bet info correctly for MEDIUM mode", () => {
-            // Arrange
-            mockPayload.gameMode = 1; // MEDIUM
-            mockPayload.numberOfRows = 12;
-
-            // Act
-            const result = processBetQueue.formatApiBetInfo(mockPayload);
-
-            // Assert
-            expect(result).toEqual({
-                amount: 100,
-                gameId: 123,
-                gameRoundId: 100,
-                choiceId: 5, // MEDIUM mode, 12 rows -> choiceId 5
-                freeBet: false,
-                clientSentTime: mockDate,
-                metadata: {
-                    mode: "landscape",
-                },
-            });
-        });
-
-        it("should format bet info correctly for LOW mode", () => {
+        it("should format bet info correctly", () => {
             // Arrange
             mockPayload.gameMode = 0; // LOW
-            mockPayload.numberOfRows = 8;
+            mockPayload.numberOfRows = 10;
+            (getChoiceId as jest.Mock).mockReturnValue(3);
 
             // Act
             const result = processBetQueue.formatApiBetInfo(mockPayload);
@@ -148,29 +129,7 @@ describe("ProcessBetQueue", () => {
                 amount: 100,
                 gameId: 123,
                 gameRoundId: 100,
-                choiceId: 1, // LOW mode, 8 rows -> choiceId 1
-                freeBet: false,
-                clientSentTime: mockDate,
-                metadata: {
-                    mode: "landscape",
-                },
-            });
-        });
-
-        it("should format bet info correctly for HIGH mode", () => {
-            // Arrange
-            mockPayload.gameMode = 2; // HIGH
-            mockPayload.numberOfRows = 16;
-
-            // Act
-            const result = processBetQueue.formatApiBetInfo(mockPayload);
-
-            // Assert
-            expect(result).toEqual({
-                amount: 100,
-                gameId: 123,
-                gameRoundId: 100,
-                choiceId: 9, // HIGH mode, 16 rows -> choiceId 9
+                choiceId: 3,
                 freeBet: false,
                 clientSentTime: mockDate,
                 metadata: {

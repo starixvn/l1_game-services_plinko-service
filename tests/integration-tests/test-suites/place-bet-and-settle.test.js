@@ -1,9 +1,8 @@
 import { describe, expect } from "@jest/globals";
 import { GameClientDriver, eventTypes, normalUser } from "sc-game-service-integration-utils";
 import appConfigs from "../../../build/app-configs.IGT";
-import gameSettings from "../_stubs/game-settings";
 import { socketOptionsFunc } from "../_stubs/test-data";
-import { getTimeOutToPlacingBetTime, initUserSession } from "../helper/helper";
+import { initUserSession } from "../helper/helper";
 
 const socketOptions = socketOptionsFunc(appConfigs.hostingPort);
 
@@ -31,16 +30,30 @@ describe("when place bet", () => {
 
     describe("when place bet with valid data", () => {
         const payload = { amount: 100, gameMode: 0, numberOfRows: 8, clientSeed: "1234" };
-        it("should return expected data", async () => {
+        it("should receive end bet", async () => {
             // Act
             client.emit(eventTypes.bet, payload);
 
             // Assert
-            const data = await client.handleGameEvent((data) => data.endBet);
-            const { endBet, ownBets, finish } = data;
+            const { endBet } = await client.handleGameEvent((data) => data.endBet);
             expect(endBet).toEqual(100);
-            expect(ownBets).toEqual({ gameMode: 0, numberOfRows: 8 });
+        });
 
+        it("should receive own bets", async () => {
+            // Act
+            client.emit(eventTypes.bet, payload);
+
+            // Assert
+            const { ownBets } = await client.handleGameEvent((data) => data.ownBets);
+            expect(ownBets).toEqual({ gameMode: 0, numberOfRows: 8 });
+        });
+
+        it("should receive finish", async () => {
+            // Act
+            client.emit(eventTypes.bet, payload);
+
+            // Assert
+            const { finish } = await client.handleGameEvent((data) => data.finish);
             expect(finish).toHaveProperty("result");
             expect(finish).toHaveProperty("settlementResult");
             expect(finish).toHaveProperty("betwin");
@@ -65,13 +78,12 @@ describe("when place bet", () => {
             { payload: { amount: 100, gameMode: 0, numberOfRows: 5, clientSeed: "1234" }, expected: { errorCode: "SB1935" } },
         ];
         testCases.forEach(({ payload, expected }) => {
-            it(`should return error code`, async () => {
+            it(`should receive error notice`, async () => {
                 // Act
                 client.emit(eventTypes.bet, payload);
 
                 // Assert
-                const data = await client.handleGameEvent((data) => data.notice);
-                const { endBet, notice } = data;
+                const { endBet, notice } = await client.handleGameEvent((data) => data.notice);
                 expect(endBet).toEqual(-1);
                 expect(notice).toEqual(expected);
             });
