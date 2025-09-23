@@ -9,7 +9,6 @@ const mockCalculateCurrencyRate = jest.fn();
 const mockUpdateUserStakeLevel = jest.fn();
 const mockPlaceBetPublisher = {
     publishToUser: jest.fn(),
-    publishPlayerBetResult: jest.fn(),
 };
 
 jest.mock("sc-game-base/src/core/crons", () => ({
@@ -56,6 +55,7 @@ describe("ProcessBetQueue", () => {
             roundId: 100,
             ingame: {},
             gameConfigs: { enabled: true, plinkoConfig: { numberOfGameModes: 3 } },
+            playerResultBoard: [],
         };
 
         mockDefinition = {
@@ -188,11 +188,14 @@ describe("ProcessBetQueue", () => {
                 ...expectedPlacingBetResult,
                 finish: expectedFinish,
             });
-            expect(mockPlaceBetPublisher.publishPlayerBetResult).toHaveBeenCalledWith(
-                mockPlayer.profile.name,
-                mockPayload.amount,
-                expectedFinish.winAmount
-            );
+            expect(mockGameData.playerResultBoard.length).toBe(1);
+            expect(mockGameData.playerResultBoard).toEqual([
+                {
+                    playerName: mockPlayer.profile.name,
+                    amount: mockPayload.amount,
+                    winAmount: expectedFinish.winAmount,
+                },
+            ]);
         });
 
         it("should skip stake level update when values are same", async () => {

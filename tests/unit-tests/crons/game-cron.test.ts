@@ -24,6 +24,7 @@ describe("GameCron", () => {
     let mockDefinition: any;
     let mockGameData: any;
     let mockRoundIdConsumer: any;
+    let mockPublisher: any;
 
     beforeEach(() => {
         jest.clearAllMocks();
@@ -37,6 +38,7 @@ describe("GameCron", () => {
         mockGameData = {
             remainingTime: 30,
             disabled: false,
+            playerResultBoard: [],
         };
         mockRoundIdConsumer = {
             initRoundId: jest.fn(),
@@ -45,10 +47,12 @@ describe("GameCron", () => {
             reset: jest.fn(),
             run: jest.fn(),
         };
-
+        mockPublisher = {
+            publishPlayerResultBoard: jest.fn(),
+        };
         // Create instance
         // @ts-ignore
-        gameCron = new GameCron();
+        gameCron = new GameCron({ publisher: mockPublisher });
         gameCron.definition = mockDefinition;
         gameCron.gameData = mockGameData;
         gameCron.roundIdConsumer = mockRoundIdConsumer;
@@ -127,6 +131,31 @@ describe("GameCron", () => {
 
             // Assert
             expect(mockBot.run).toHaveBeenCalled();
+        });
+
+        it("should publish player result board when remaining time is not equal to whole round duration and game is enabled", async () => {
+            // Arrange
+            mockGameData.remainingTime = 25;
+            mockGameData.disabled = false;
+
+            // Act
+            await gameCron.proceed();
+
+            // Assert
+            expect(mockPublisher.publishPlayerResultBoard).toHaveBeenCalled();
+        });
+
+        it("should reset player result board when remaining time is not equal to whole round duration and game is enabled", async () => {
+            // Arrange
+            mockGameData.remainingTime = 25;
+            mockGameData.disabled = false;
+            mockGameData.playerResultBoard = [{ playerName: "testPlayer", amount: 100, winAmount: 100 }];
+
+            // Act
+            await gameCron.proceed();
+
+            // Assert
+            expect(mockGameData.playerResultBoard).toEqual([]);
         });
 
         it("should not decrement remaining time when game is disabled", async () => {

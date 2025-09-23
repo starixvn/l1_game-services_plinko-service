@@ -6,7 +6,7 @@ import { Bot, GameCron, ProcessBetQueue } from "./crons";
 import { Results, Rounds } from "./models";
 import RoundQuery from "./query-apis/round-query";
 import SocketRouter from "./routers/socket-router";
-import PlaceBetPublisher from "./publishers/place-bet-publisher";
+import EventPublisher from "./publishers/event-publisher";
 
 export default class ContainerRegistry extends Core.ContainerRegistry {
     registerConsumers() {
@@ -35,8 +35,8 @@ export default class ContainerRegistry extends Core.ContainerRegistry {
         super.registerPublishers();
 
         this.container.register({
+            publisher: asClass(EventPublisher).singleton(),
             userSignInPublisher: asClass(Table.EventPublishers.TableUserSignInPublisher).singleton(),
-            placeBetPublisher: asClass(PlaceBetPublisher).singleton(),
         });
     }
 

@@ -14,7 +14,7 @@ export type PlinkoRound = {
     name: string;
     amount: number;
     totalAmount: number;
-    betwin: number;
+    betWin: number;
     paid: true;
     rate: number;
     odds: PlinkoOdds;

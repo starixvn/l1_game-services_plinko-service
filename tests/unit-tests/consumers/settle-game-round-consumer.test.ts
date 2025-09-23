@@ -114,7 +114,7 @@ describe("SettleGameRoundConsumer", () => {
             };
             mockGenerateResultByBet.mockResolvedValue(mockResult);
             mockDefinition.settle.mockReturnValue(slotIndex);
-            mockRoundsRepository.create.mockResolvedValue({ id: roundId, time: mockDate, amount: 100, betwin: 250 });
+            mockRoundsRepository.create.mockResolvedValue({ id: roundId, time: mockDate, amount: 100, betWin: 250 });
 
             // Act
             const result = await settleGameRoundConsumer.settle(mockPlayer, roundId, rate);
@@ -183,7 +183,7 @@ describe("SettleGameRoundConsumer", () => {
                 name: mockPlayer.profile.name,
                 amount: 100,
                 totalAmount: 100,
-                betwin: 250, // 100 * 2.5
+                betWin: 250, // 100 * 2.5
                 paid: true,
                 rate,
                 odds: mockGameData.gameConfigs.plinkoConfig.odds,
@@ -219,7 +219,7 @@ describe("SettleGameRoundConsumer", () => {
             const mockRound = {
                 id: 123,
                 amount: 100,
-                betwin: 250,
+                betWin: 250,
                 result: [1, 0, 0, 0, 0, 0, 0, 0, 0],
                 settlementResult: { slotIndex: 1, multiplier: 2.5 },
                 time: mockDate,
@@ -251,7 +251,7 @@ describe("SettleGameRoundConsumer", () => {
             const mockRound = {
                 id: 123,
                 amount: 100,
-                betwin: 250,
+                betWin: 250,
             } as PlinkoRound;
 
             // Act

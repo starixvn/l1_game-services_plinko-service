@@ -5,6 +5,7 @@ import appConfigs from "../../../build//app-configs.IGT";
 import gameSettings from "../../../build/game-settings";
 import { generateResult, getSettlementResult } from "../../../build/helpers/result-helper";
 import ContainerRegistry from "../../../build/container-registry";
+import GameData from "../../../build/game-data";
 
 export const run = async () => {
     initAPIStub(appConfigs.apiSettings.apiUrl);
@@ -12,7 +13,7 @@ export const run = async () => {
     const definition = new Core.GameDefinition(gameSettings, generateResult, getSettlementResult, () => {});
     subGameManagementService(appConfigs, definition);
 
-    const gameData = new Core.GameData(gameSettings.durations.wholeRound);
+    const gameData = new GameData(gameSettings.durations.wholeRound);
     const container = new ContainerRegistry().register(appConfigs, definition, gameData);
     const app = new Core.BaseGameApp("Plinko", appConfigs);
     await app.run();

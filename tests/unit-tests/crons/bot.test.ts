@@ -2,13 +2,9 @@ import Bot from "../../../src/crons/bot";
 import { GAME_MODE, NUMBER_OF_ROWS } from "../../../src/constants";
 import { helpers } from "sc-common";
 
-// Mock the base class
-const mockSuperConstructor = jest.fn();
-
 jest.mock("sc-game-base/src/core/crons", () => ({
     BaseBot: class {
-        constructor(definition: any, gameData: any, gameManagementApiClientFactory: any) {
-            mockSuperConstructor(definition, gameData, gameManagementApiClientFactory);
+        constructor() {
             return this;
         }
     },
@@ -24,15 +20,11 @@ jest.mock("sc-common", () => ({
 
 describe("Bot", () => {
     let bot: Bot;
-    let mockDefinition: any;
     let mockGameData: any;
-    let mockGameManagementApiClientFactory: any;
-    let mockPlaceBetPublisher: any;
 
     beforeEach(() => {
         jest.clearAllMocks();
 
-        mockDefinition = {};
         mockGameData = {
             gameConfigs: {
                 bot_maxbet: 100,
@@ -54,23 +46,13 @@ describe("Bot", () => {
                     },
                 },
             },
-        };
-        mockGameManagementApiClientFactory = {};
-        mockPlaceBetPublisher = {
-            publishPlayerBetResult: jest.fn(),
+            playerResultBoard: [],
         };
 
         // Create instance
-        bot = new Bot(mockDefinition, mockGameData, mockGameManagementApiClientFactory, mockPlaceBetPublisher);
+        // @ts-ignore
+        bot = new Bot();
         bot.gameData = mockGameData;
-    });
-
-    describe("constructor", () => {
-        it("should initialize with correct dependencies", () => {
-            // Assert
-            expect(mockSuperConstructor).toHaveBeenCalledWith(mockDefinition, mockGameData, mockGameManagementApiClientFactory);
-            expect(bot.placeBetPublisher).toBe(mockPlaceBetPublisher);
-        });
     });
 
     describe("isDuringBetTime", () => {
@@ -105,7 +87,14 @@ describe("Bot", () => {
             expect(bot.getMaxBet).toHaveBeenCalledWith(mockBotPlayer, "");
             expect(helpers.numberHelper.getRandomNumberStep5).toHaveBeenCalledWith(minBet, maxBet, true);
             expect(bot.calculateBetWin).toHaveBeenCalledWith(randomAmount);
-            expect(mockPlaceBetPublisher.publishPlayerBetResult).toHaveBeenCalledWith("TestBot", randomAmount, expectedBetWin);
+            expect(mockGameData.playerResultBoard.length).toBe(1);
+            expect(mockGameData.playerResultBoard).toEqual([
+                {
+                    playerName: "TestBot",
+                    amount: randomAmount,
+                    winAmount: expectedBetWin,
+                },
+            ]);
         });
     });
 

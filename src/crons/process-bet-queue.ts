@@ -2,11 +2,12 @@ import { ProcessBetQueue as BaseProcessBetQueue } from "sc-game-base/src/core/cr
 import SettleGameRoundConsumer from "../consumers/settle-game-round-consumer";
 import { PlaceBetPayload } from "../types";
 import { getChoiceId } from "../helpers/choice-mapper-helper";
-import EventPublisher from "../publishers/place-bet-publisher";
+import GameData from "../game-data";
 
 export default class ProcessBetQueue extends BaseProcessBetQueue {
     declare settleGameRoundConsumer: SettleGameRoundConsumer;
-    declare placeBetPublisher: EventPublisher;
+    declare gameData: GameData;
+
     constructor(props: any) {
         super(props);
         this.settleGameRoundConsumer = props.settleGameRoundConsumer;
@@ -48,7 +49,15 @@ export default class ProcessBetQueue extends BaseProcessBetQueue {
         const placingBetResult = this.generatePlacingBetResult(player, response, payload, rate);
         const finish = await this.settleGameRoundConsumer.settle(player, roundId, rate);
         this.placeBetPublisher.publishToUser(player.UID, { ...placingBetResult, finish });
-        this.placeBetPublisher.publishPlayerBetResult(player.profile.name, payload.amount, finish?.winAmount);
+        this.insertPlayerResultBoard(player, finish);
+    }
+
+    insertPlayerResultBoard(player: any, finish: { amount: number; winAmount: number } | null) {
+        this.gameData.playerResultBoard.push({
+            playerName: player.profile.name,
+            amount: finish?.amount ?? 0,
+            winAmount: finish?.winAmount ?? 0,
+        });
     }
 
     generatePlacingBetResult(_: any, response: any, payload: PlaceBetPayload, __: any) {

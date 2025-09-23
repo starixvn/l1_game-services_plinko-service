@@ -24,7 +24,7 @@ export default class SettleGameRoundConsumer extends BaseSettleGameRoundConsumer
 
         if (newRound) {
             await this.settleBet(newRound);
-            return { result, settlementResult, winAmount: newRound.betwin, amount: newRound.amount };
+            return { result, settlementResult, winAmount: +newRound.betWin, amount: +newRound.amount };
         }
         return null;
     }
@@ -39,7 +39,7 @@ export default class SettleGameRoundConsumer extends BaseSettleGameRoundConsumer
             name: player.profile.name,
             amount,
             totalAmount: amount,
-            betwin: amount * settlementResult.multiplier,
+            betWin: amount * settlementResult.multiplier,
             paid: true,
             rate,
             odds: plinkoConfig.odds,
@@ -68,8 +68,8 @@ export default class SettleGameRoundConsumer extends BaseSettleGameRoundConsumer
     calculateBetResult(round: PlinkoRound) {
         return {
             totalBetAmount: round.amount,
-            totalWin: round.betwin,
-            netWin: round.betwin - round.amount,
+            totalWin: round.betWin,
+            netWin: round.betWin - round.amount,
             totalLost: 0,
             winningByChoices: {},
         };

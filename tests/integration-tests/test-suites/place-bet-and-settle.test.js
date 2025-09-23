@@ -66,6 +66,17 @@ describe("when place bet", () => {
             expect(finish.winAmount).toBeGreaterThanOrEqual(0);
             expect(finish.amount).toBeGreaterThanOrEqual(0);
         });
+
+        it("should receive playerBet", async () => {
+            // Act
+            client.emit(eventTypes.bet, payload);
+
+            // Assert
+            const { playerBet } = await client.handleGameEvent((data) => data.playerBet);
+            expect(playerBet.playerName).toEqual("N***ser"); // mask name NormalUser
+            expect(playerBet.amount).toEqual(100);
+            expect(playerBet.winAmount).toBeGreaterThanOrEqual(0);
+        });
     });
 
     describe("when place bet with invalid data", () => {
