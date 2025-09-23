@@ -1,7 +1,7 @@
 import { SettleGameRoundConsumer } from "../../../src/consumers";
 import ProcessBetQueue from "../../../src/crons/process-bet-queue";
 import { PlaceBetPayload } from "../../../src/types";
-import { getChoiceId } from "../../../src/helpers/choice-mapper";
+import { getChoiceId } from "../../../src/helpers/choice-mapper-helper";
 
 // Mock the base class
 const mockProceedBet = jest.fn();
@@ -9,6 +9,7 @@ const mockCalculateCurrencyRate = jest.fn();
 const mockUpdateUserStakeLevel = jest.fn();
 const mockPlaceBetPublisher = {
     publishToUser: jest.fn(),
+    publishPlayerBetResult: jest.fn(),
 };
 
 jest.mock("sc-game-base/src/core/crons", () => ({
@@ -35,7 +36,7 @@ jest.mock("../../../src/consumers/settle-game-round-consumer", () => {
     }));
 });
 
-jest.mock("../../../src/helpers/choice-mapper", () => ({
+jest.mock("../../../src/helpers/choice-mapper-helper", () => ({
     getChoiceId: jest.fn(),
 }));
 
@@ -167,7 +168,7 @@ describe("ProcessBetQueue", () => {
             const expectedFinish = {
                 result: [1, 0, 1, 0, 0, 0, 0, 0, 0],
                 settlementResult: { slotIndex: 2, multiplier: 2.0 },
-                betwin: 200,
+                winAmount: 200,
                 amount: 100,
             };
 
@@ -187,6 +188,11 @@ describe("ProcessBetQueue", () => {
                 ...expectedPlacingBetResult,
                 finish: expectedFinish,
             });
+            expect(mockPlaceBetPublisher.publishPlayerBetResult).toHaveBeenCalledWith(
+                mockPlayer.profile.name,
+                mockPayload.amount,
+                expectedFinish.winAmount
+            );
         });
 
         it("should skip stake level update when values are same", async () => {

@@ -24,7 +24,7 @@ export default class SettleGameRoundConsumer extends BaseSettleGameRoundConsumer
 
         if (newRound) {
             await this.settleBet(newRound);
-            return { result, settlementResult, betwin: newRound.betwin, amount: newRound.amount };
+            return { result, settlementResult, winAmount: newRound.betwin, amount: newRound.amount };
         }
         return null;
     }

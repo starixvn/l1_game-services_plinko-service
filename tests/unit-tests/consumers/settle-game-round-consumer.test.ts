@@ -125,7 +125,7 @@ describe("SettleGameRoundConsumer", () => {
             expect(result).toEqual({
                 result: mockResult,
                 settlementResult: expectedSettlementResult,
-                betwin: 250,
+                winAmount: 250,
                 amount: 100,
             });
         });

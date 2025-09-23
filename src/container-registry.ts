@@ -2,10 +2,11 @@ import { asClass, asValue } from "awilix";
 import { Table, Core } from "sc-game-base";
 
 import { PlaceBetConsumer, SettleGameRoundConsumer, RoundResultConsumer, InGameConsumer } from "./consumers";
-import { GameCron, ProcessBetQueue } from "./crons";
+import { Bot, GameCron, ProcessBetQueue } from "./crons";
 import { Results, Rounds } from "./models";
 import RoundQuery from "./query-apis/round-query";
 import SocketRouter from "./routers/socket-router";
+import PlaceBetPublisher from "./publishers/place-bet-publisher";
 
 export default class ContainerRegistry extends Core.ContainerRegistry {
     registerConsumers() {
@@ -24,7 +25,7 @@ export default class ContainerRegistry extends Core.ContainerRegistry {
         super.registerCrons();
 
         this.container.register({
-            bot: asValue(undefined),
+            bot: asClass(Bot).singleton(),
             gameCron: asClass(GameCron).singleton().proxy(),
             processBetQueue: asClass(ProcessBetQueue).singleton().proxy(),
         });
@@ -35,6 +36,7 @@ export default class ContainerRegistry extends Core.ContainerRegistry {
 
         this.container.register({
             userSignInPublisher: asClass(Table.EventPublishers.TableUserSignInPublisher).singleton(),
+            placeBetPublisher: asClass(PlaceBetPublisher).singleton(),
         });
     }
 

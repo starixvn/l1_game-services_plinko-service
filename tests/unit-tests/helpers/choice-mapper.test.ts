@@ -1,4 +1,4 @@
-import { getChoiceId } from "../../../src/helpers/choice-mapper";
+import { getChoiceId } from "../../../src/helpers/choice-mapper-helper";
 
 describe("Choice Mapper", () => {
     const testCases = [

@@ -56,14 +56,14 @@ describe("when place bet", () => {
             const { finish } = await client.handleGameEvent((data) => data.finish);
             expect(finish).toHaveProperty("result");
             expect(finish).toHaveProperty("settlementResult");
-            expect(finish).toHaveProperty("betwin");
+            expect(finish).toHaveProperty("winAmount");
             expect(finish).toHaveProperty("amount");
             expect(finish.result.length).toEqual(payload.numberOfRows);
             expect(finish.result.every((path) => path === 0 || path === 1)).toBeTruthy();
             expect(finish.settlementResult.slotIndex).toBeGreaterThanOrEqual(0);
             expect(finish.settlementResult.slotIndex).toBeLessThanOrEqual(payload.numberOfRows);
             expect(typeof finish.settlementResult.multiplier).toBe("number");
-            expect(finish.betwin).toBeGreaterThanOrEqual(0);
+            expect(finish.winAmount).toBeGreaterThanOrEqual(0);
             expect(finish.amount).toBeGreaterThanOrEqual(0);
         });
     });

@@ -20,6 +20,7 @@ jest.mock("sc-game-base/src/core/crons", () => ({
 
 describe("GameCron", () => {
     let gameCron: GameCron;
+    let mockBot: any;
     let mockDefinition: any;
     let mockGameData: any;
     let mockRoundIdConsumer: any;
@@ -40,6 +41,10 @@ describe("GameCron", () => {
         mockRoundIdConsumer = {
             initRoundId: jest.fn(),
         };
+        mockBot = {
+            reset: jest.fn(),
+            run: jest.fn(),
+        };
 
         // Create instance
         // @ts-ignore
@@ -47,6 +52,7 @@ describe("GameCron", () => {
         gameCron.definition = mockDefinition;
         gameCron.gameData = mockGameData;
         gameCron.roundIdConsumer = mockRoundIdConsumer;
+        gameCron.bot = mockBot;
     });
 
     describe("start", () => {
@@ -73,50 +79,75 @@ describe("GameCron", () => {
     });
 
     describe("proceed", () => {
-        it("should check game status when remaining time equals whole round duration", () => {
+        it("should check game status when remaining time equals whole round duration", async () => {
             // Arrange
             mockGameData.remainingTime = 30; // Assuming this equals definition.durations.wholeRound
             gameCron.definition = { durations: { wholeRound: 30 } } as any;
 
             // Act
-            gameCron.proceed();
+            await gameCron.proceed();
 
             // Assert
             expect(mockCheckGameStatus).toHaveBeenCalled();
         });
 
-        it("should decrement remaining time when game is not disabled", () => {
+        it("should reset bot when remaining time equals whole round duration and game is enabled", async () => {
+            // Arrange
+            mockGameData.remainingTime = 30; // Assuming this equals definition.durations.wholeRound
+            gameCron.definition = { durations: { wholeRound: 30 } } as any;
+            mockGameData.disabled = false;
+
+            // Act
+            await gameCron.proceed();
+
+            // Assert
+            expect(mockBot.reset).toHaveBeenCalled();
+        });
+
+        it("should decrement remaining time when game is not disabled", async () => {
             // Arrange
             mockGameData.remainingTime = 25;
             mockGameData.disabled = false;
 
             // Act
-            gameCron.proceed();
+            await gameCron.proceed();
 
             // Assert
             expect(mockCheckGameStatus).not.toHaveBeenCalled();
             expect(mockGameData.remainingTime).toBe(24);
         });
 
-        it("should not decrement remaining time when game is disabled", () => {
+        it("should run bot when remaining time is not equal to whole round duration and game is enabled", async () => {
+            // Arrange
+            mockGameData.remainingTime = 25;
+            mockGameData.disabled = false;
+
+            // Act
+            await gameCron.proceed();
+
+            // Assert
+            expect(mockBot.run).toHaveBeenCalled();
+        });
+
+        it("should not decrement remaining time when game is disabled", async () => {
             // Arrange
             mockGameData.remainingTime = 30;
             mockGameData.disabled = true;
 
             // Act
-            gameCron.proceed();
+            await gameCron.proceed();
 
             // Assert
             expect(mockGameData.remainingTime).toBe(30);
         });
 
-        it("should handle remaining time of 0 correctly", () => {
+        it("should handle remaining time of 0 correctly", async () => {
             // Arrange
             mockGameData.remainingTime = 0;
             mockGameData.disabled = false;
 
             // Act
-            gameCron.proceed();
+            await gameCron.proceed();
 
             // Assert
             expect(mockGameData.remainingTime).toBe(30);

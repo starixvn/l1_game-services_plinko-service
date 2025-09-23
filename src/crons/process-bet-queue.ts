@@ -1,10 +1,12 @@
 import { ProcessBetQueue as BaseProcessBetQueue } from "sc-game-base/src/core/crons";
 import SettleGameRoundConsumer from "../consumers/settle-game-round-consumer";
 import { PlaceBetPayload } from "../types";
-import { getChoiceId } from "../helpers/choice-mapper";
+import { getChoiceId } from "../helpers/choice-mapper-helper";
+import EventPublisher from "../publishers/place-bet-publisher";
 
 export default class ProcessBetQueue extends BaseProcessBetQueue {
     declare settleGameRoundConsumer: SettleGameRoundConsumer;
+    declare placeBetPublisher: EventPublisher;
     constructor(props: any) {
         super(props);
         this.settleGameRoundConsumer = props.settleGameRoundConsumer;
@@ -46,6 +48,7 @@ export default class ProcessBetQueue extends BaseProcessBetQueue {
         const placingBetResult = this.generatePlacingBetResult(player, response, payload, rate);
         const finish = await this.settleGameRoundConsumer.settle(player, roundId, rate);
         this.placeBetPublisher.publishToUser(player.UID, { ...placingBetResult, finish });
+        this.placeBetPublisher.publishPlayerBetResult(player.profile.name, payload.amount, finish?.winAmount);
     }
 
     generatePlacingBetResult(_: any, response: any, payload: PlaceBetPayload, __: any) {
@@ -56,4 +59,6 @@ export default class ProcessBetQueue extends BaseProcessBetQueue {
             user: { ...response },
         } as any;
     }
+
+    decreaseBetTracks(_: string, __: any): void {} // NOSONAR
 }

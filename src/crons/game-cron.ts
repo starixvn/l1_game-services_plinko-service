@@ -13,9 +13,13 @@ export default class GameCron extends BaseGameCron {
         if (this.gameData.remainingTime === wholeRound) {
             await this.checkGameStatus();
         }
-
-        if (!this.gameData.disabled) {
+        const isEnabled = !this.gameData.disabled;
+        if (isEnabled && this.gameData.remainingTime === wholeRound) {
+            await this.bot.reset();
+        }
+        if (isEnabled) {
             this.gameData.remainingTime--;
+            await this.bot.run();
         }
         if (this.gameData.remainingTime < 0) {
             this.gameData.remainingTime = wholeRound;
