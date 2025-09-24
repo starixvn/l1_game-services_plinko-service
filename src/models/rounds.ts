@@ -18,6 +18,7 @@ const Schema = new mongoose.Schema({
     amount: { type: Number, default: 0 },
     totalAmount: { type: Number, default: 0 },
     betWin: { type: Number, default: 0 },
+    reachMaxWin: { type: Boolean, default: false },
     time: { type: Date, default: Date.now },
     odds: { type: Object }, // {[mode: number]: {[numberOfRows: number]: number[] }}
     clientSeed: { type: String, default: "" },

@@ -170,6 +170,7 @@ describe("ProcessBetQueue", () => {
                 settlementResult: { slotIndex: 2, multiplier: 2.0 },
                 winAmount: 200,
                 amount: 100,
+                reachMaxWin: false,
             };
 
             mockCalculateCurrencyRate.mockReturnValue(expectedRate);

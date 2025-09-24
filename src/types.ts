@@ -15,6 +15,7 @@ export type PlinkoRound = {
     amount: number;
     totalAmount: number;
     betWin: number;
+    reachMaxWin: boolean;
     paid: true;
     rate: number;
     odds: PlinkoOdds;
@@ -36,6 +37,7 @@ export type GameConfigs = {
     enableFreeBet: boolean;
     enabled: boolean;
     maxbet: number;
+    maxWinPerRound: number;
     maxbot: number;
     minbet: number;
     odds: Record<string, number>;

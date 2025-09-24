@@ -57,10 +57,13 @@ describe("SettleGameRoundConsumer", () => {
                         1: {
                             8: [1, 2, 2.5, 4, 5, 6, 7, 8, 9],
                             12: [1, 2, 2.5, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
+                            16: [5000, 2, 2.5, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
                         },
                     },
                 },
+                maxWinPerRound: 1,
             },
+            currencyGroupGames: [{ groupId: "group1", maxBet: 1000 }],
             exchangeRates: {
                 exId: 123,
             },
@@ -78,6 +81,7 @@ describe("SettleGameRoundConsumer", () => {
             UID: "player123",
             profile: {
                 name: "testPlayer",
+                maxBet: 1000,
             },
             session: {
                 currencyName: "USD",
@@ -85,6 +89,7 @@ describe("SettleGameRoundConsumer", () => {
                 playerId: "player1",
                 operatorId: "op1",
                 system: 10,
+                currencyGroupId: "group1",
             },
         };
 
@@ -114,7 +119,7 @@ describe("SettleGameRoundConsumer", () => {
             };
             mockGenerateResultByBet.mockResolvedValue(mockResult);
             mockDefinition.settle.mockReturnValue(slotIndex);
-            mockRoundsRepository.create.mockResolvedValue({ id: roundId, time: mockDate, amount: 100, betWin: 250 });
+            mockRoundsRepository.create.mockResolvedValue({ id: roundId, time: mockDate, amount: 100, betWin: 250, reachMaxWin: false });
 
             // Act
             const result = await settleGameRoundConsumer.settle(mockPlayer, roundId, rate);
@@ -127,6 +132,7 @@ describe("SettleGameRoundConsumer", () => {
                 settlementResult: expectedSettlementResult,
                 winAmount: 250,
                 amount: 100,
+                reachMaxWin: false,
             });
         });
 
@@ -167,6 +173,36 @@ describe("SettleGameRoundConsumer", () => {
         });
     });
 
+    describe("getMaxWinPerRound", () => {
+        it("should return max win per round when max bet is less than max win per round", () => {
+            // Arrange
+            mockPlayer.profile.maxBet = 2000;
+            const result = settleGameRoundConsumer.getMaxWinPerRound(mockPlayer);
+            expect(result).toBe(1000);
+        });
+
+        it("should return player max bet when max bet is greater than max win per round", () => {
+            // Arrange
+            mockPlayer.profile.maxBet = 200;
+            const result = settleGameRoundConsumer.getMaxWinPerRound(mockPlayer);
+            expect(result).toBe(200);
+        });
+
+        it("should return 0 when currency group game is not found", () => {
+            // Arrange
+            mockPlayer.session.currencyGroupId = "group2";
+            const result = settleGameRoundConsumer.getMaxWinPerRound(mockPlayer);
+            expect(result).toBe(0);
+        });
+
+        it("should return 0 when player max bet is not set", () => {
+            // Arrange
+            mockPlayer.profile.maxBet = undefined;
+            const result = settleGameRoundConsumer.getMaxWinPerRound(mockPlayer);
+            expect(result).toBe(0);
+        });
+    });
+
     describe("createNewRoundDocument", () => {
         it("should create round document with correct structure", async () => {
             // Arrange
@@ -184,6 +220,7 @@ describe("SettleGameRoundConsumer", () => {
                 amount: 100,
                 totalAmount: 100,
                 betWin: 250, // 100 * 2.5
+                reachMaxWin: false,
                 paid: true,
                 rate,
                 odds: mockGameData.gameConfigs.plinkoConfig.odds,
@@ -202,6 +239,56 @@ describe("SettleGameRoundConsumer", () => {
                 exchangeRateId: 123,
             };
 
+            mockRoundsRepository.create.mockResolvedValue(expectedRound);
+
+            // Act
+            const resultRound = await settleGameRoundConsumer.createNewRoundDocument(mockPlayer, rate, roundId, result, settlementResult);
+
+            // Assert
+            expect(mockRoundsRepository.create).toHaveBeenCalledWith(expectedRound);
+            expect(resultRound).toEqual(expectedRound);
+        });
+
+        it("should create round document with reachMaxWin true if bet win is equal to max win per round", async () => {
+            // Arrange
+            const roundId = 123;
+            const rate = 1;
+            const result = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+            const settlementResult: SettlementResult = {
+                slotIndex: 0,
+                multiplier: 5000,
+            };
+            mockGameData.ingame.testPlayer = {
+                amount: 1000,
+                gameMode: 1,
+                numberOfRows: 16,
+                clientSeed: "1234",
+            };
+            const expectedRound: PlinkoRound = {
+                id: roundId,
+                uid: mockPlayer.UID,
+                name: mockPlayer.profile.name,
+                amount: 1000,
+                totalAmount: 1000,
+                betWin: 1000,
+                reachMaxWin: true,
+                paid: true,
+                rate,
+                odds: mockGameData.gameConfigs.plinkoConfig.odds,
+                time: mockDate,
+                clientSeed: "1234",
+                currency: "USD",
+                siteId: "site1",
+                playerId: "player1",
+                operatorId: "op1",
+                appType: 10,
+                gameMode: 1,
+                numberOfRows: 16,
+                result,
+                settlementResult,
+                freeBet: false,
+                exchangeRateId: 123,
+            };
             mockRoundsRepository.create.mockResolvedValue(expectedRound);
 
             // Act

@@ -20,26 +20,40 @@ export default class SettleGameRoundConsumer extends BaseSettleGameRoundConsumer
             slotIndex,
             multiplier: plinkoConfig?.odds?.[gameMode]?.[numberOfRows]?.[slotIndex] ?? 1,
         };
+
         const newRound = await this.createNewRoundDocument(player, rate, roundId, result, settlementResult);
 
         if (newRound) {
             await this.settleBet(newRound);
-            return { result, settlementResult, winAmount: +newRound.betWin, amount: +newRound.amount };
+            return { result, settlementResult, winAmount: +newRound.betWin, amount: +newRound.amount, reachMaxWin: newRound.reachMaxWin };
         }
         return null;
+    }
+
+    getMaxWinPerRound(player: any) {
+        const { maxWinPerRound } = this.gameData.gameConfigs;
+        const settings = this.gameData.currencyGroupGames.find((x) => x.groupId.toString() === player.session.currencyGroupId);
+        const maxBet = Math.min(player.profile?.maxBet ?? 0, settings?.maxBet ?? 0);
+
+        return maxWinPerRound * maxBet;
     }
 
     async createNewRoundDocument(player: any, rate: number, roundId: number, result: number[], settlementResult: SettlementResult) {
         const { numberOfRows, gameMode, amount, clientSeed } = this.gameData.ingame[player.profile.name];
         const { plinkoConfig } = this.gameData.gameConfigs as unknown as GameConfigs;
         const { exchangeRates } = this.gameData;
+        const maxWinPerRound = this.getMaxWinPerRound(player);
+        const actualWin = amount * settlementResult.multiplier;
+        const betWin = Math.min(actualWin, maxWinPerRound);
+
         const newRound: PlinkoRound = {
             id: roundId,
             uid: player.UID,
             name: player.profile.name,
             amount,
             totalAmount: amount,
-            betWin: amount * settlementResult.multiplier,
+            betWin,
+            reachMaxWin: betWin === maxWinPerRound,
             paid: true,
             rate,
             odds: plinkoConfig.odds,

@@ -23,6 +23,7 @@ export const gameConfig = {
     maxBetPerChoices: { player: 3000, banker: 3000, tie: 3000, anyPair: 3000 },
     botenabled: false,
     choices_maxbet: { player: 3000, banker: 3000, tie: 3000, anyPair: 3000 },
+    maxWinPerRound: 100000,
     plinkoConfig: {
         odds: {
             0: {
@@ -71,6 +72,7 @@ export const createGameConfig = async () => {
         botenabled: false,
         maxbot: 0,
         bot_maxbet: 1000000,
+        maxWinPerRound: 100000,
         bot_minbet: 1,
         hour_maxbot: [
             0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01,
@@ -121,6 +123,7 @@ export const createRoundData = (uid) => {
             amount: 100,
             totalAmount: 100,
             betWin: 500,
+            reachMaxWin: false,
             odds: gameConfig.plinkoConfig.odds,
             clientSeed: "1234",
             currency: "$US",
@@ -143,6 +146,7 @@ export const createRoundData = (uid) => {
             amount: 100,
             totalAmount: 100,
             betWin: 500,
+            reachMaxWin: false,
             odds: gameConfig.plinkoConfig.odds,
             clientSeed: "1234",
             currency: "$US",

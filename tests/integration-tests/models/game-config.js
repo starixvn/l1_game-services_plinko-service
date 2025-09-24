@@ -22,5 +22,6 @@ export const GameConfigSchema = new mongoose.Schema({
     randomMode: { type: Number },
     gameId: { type: Number },
     displayName: { type: String },
+    maxWinPerRound: { type: Number },
     plinkoConfig: { type: Object },
 });

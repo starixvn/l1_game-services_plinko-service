@@ -49,6 +49,7 @@ describe("when get history", () => {
                 numberOfRows: 8,
                 amount: 100,
                 betWin: 500,
+                reachMaxWin: false,
                 name: "NormalUser",
                 odds: {
                     0: {
