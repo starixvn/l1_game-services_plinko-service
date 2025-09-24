@@ -28,6 +28,7 @@ describe("Bot", () => {
         mockGameData = {
             gameConfigs: {
                 bot_maxbet: 100,
+                bot_minbet: 10,
                 name: "Plinko",
                 plinkoConfig: {
                     odds: {
@@ -157,6 +158,38 @@ describe("Bot", () => {
 
             // Assert
             expect(result).toBe(amount * 17);
+        });
+    });
+
+    describe("getMinBet", () => {
+        it("should return bot_minbet from gameConfigs when available", () => {
+            // Act
+            const result = bot.getMinBet();
+
+            // Assert
+            expect(result).toBe(10);
+        });
+
+        it("should return 1 when bot_minbet is not set in gameConfigs", () => {
+            // Arrange
+            mockGameData.gameConfigs.bot_minbet = undefined;
+
+            // Act
+            const result = bot.getMinBet();
+
+            // Assert
+            expect(result).toBe(1);
+        });
+
+        it("should return 1 when bot_minbet is less than 1", () => {
+            // Arrange
+            mockGameData.gameConfigs.bot_minbet = 0;
+
+            // Act
+            const result = bot.getMinBet();
+
+            // Assert
+            expect(result).toBe(1);
         });
     });
 

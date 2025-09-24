@@ -33,8 +33,11 @@ export default class Bot extends BaseBot {
         return amount * (plinkoConfig?.odds?.[gameMode]?.[numberOfRows]?.[slotIndex] ?? 1);
     }
 
+    getMinBet() {
+        return Math.max(1, this.gameData.gameConfigs.bot_minbet ?? 1);
+    }
+
     getMaxBet(_: unknown, __: unknown): number {
-        const gameConfigs = this.gameData.gameConfigs;
-        return gameConfigs.bot_maxbet ?? 1;
+        return this.gameData.gameConfigs.bot_maxbet ?? 1;
     }
 }

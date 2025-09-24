@@ -20,9 +20,9 @@ export const gameConfig = {
     name: gameSetting.name.toLowerCase(),
     minBet: 1,
     maxBet: 3000,
-    maxBetPerChoices: { player: 3000, banker: 3000, tie: 3000, anyPair: 3000 },
+    maxBetPerChoices: {},
     botenabled: false,
-    choices_maxbet: { player: 3000, banker: 3000, tie: 3000, anyPair: 3000 },
+    choices_maxbet: {},
     maxWinPerRound: 100000,
     plinkoConfig: {
         odds: {
