@@ -37,7 +37,7 @@ export default class ProcessBetQueue extends BaseProcessBetQueue {
         };
     }
 
-    async validateBetRequest(_: any, __: any) {
+    async validateBetRequest(_: unknown, __: unknown) {
         return true;
     }
 
@@ -60,7 +60,7 @@ export default class ProcessBetQueue extends BaseProcessBetQueue {
         });
     }
 
-    generatePlacingBetResult(_: any, response: any, payload: PlaceBetPayload, __: any) {
+    generatePlacingBetResult(_: unknown, response: any, payload: PlaceBetPayload, __: unknown) {
         const { amount, gameMode, numberOfRows } = payload;
         return {
             endBet: amount,
@@ -69,5 +69,5 @@ export default class ProcessBetQueue extends BaseProcessBetQueue {
         } as any;
     }
 
-    decreaseBetTracks(_: string, __: any): void {} // NOSONAR
+    decreaseBetTracks(_: unknown, __: unknown): void {} // NOSONAR
 }

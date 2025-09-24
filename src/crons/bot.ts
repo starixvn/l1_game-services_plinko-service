@@ -7,7 +7,9 @@ import GameData from "../game-data";
 export default class Bot extends BaseBot {
     declare gameData: GameData;
 
-    isDuringBetTime = () => true;
+    isDuringBetTime() {
+        return true;
+    }
 
     async placeBet(bot: any): Promise<void> {
         const maxBet = this.getMaxBet(bot, "");
@@ -31,7 +33,7 @@ export default class Bot extends BaseBot {
         return amount * (plinkoConfig?.odds?.[gameMode]?.[numberOfRows]?.[slotIndex] ?? 1);
     }
 
-    getMaxBet(_: any, __: string): number {
+    getMaxBet(_: unknown, __: unknown): number {
         const gameConfigs = this.gameData.gameConfigs;
         return gameConfigs.bot_maxbet ?? 1;
     }

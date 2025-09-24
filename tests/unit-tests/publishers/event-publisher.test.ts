@@ -38,6 +38,17 @@ describe("EventPublisher", () => {
             expect(publisher.publishToAllUsers).not.toHaveBeenCalled();
         });
 
+        it("should not publish player result board if player result board is not exist", () => {
+            // Arrange
+            mockGameData.playerResultBoard = undefined;
+
+            // Act
+            publisher.publishPlayerResultBoard();
+
+            // Assert
+            expect(publisher.publishToAllUsers).not.toHaveBeenCalled();
+        });
+
         it("should publish player bet result", () => {
             // Arrange
             const data = { playerName: "John Doe", amount: 100, winAmount: 100 };

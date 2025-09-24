@@ -5,7 +5,7 @@ import { GAME_MODE, NUMBER_OF_ROWS } from "../constants";
 import { PlaceBetPayload } from "../types";
 
 export default class PlaceBetConsumer extends BasePlaceBetConsumer {
-    composeValidationCriteria(player: any, betChoice: any, amount: number, freeBet: boolean, _: number) {
+    composeValidationCriteria(player: any, betChoice: unknown, amount: number, freeBet: boolean, _: number) {
         const bettingTimeValidationCriteria = this.composeTimeValidationCriteria(player);
         const betAmountValidationCriteria = this.composeBetAmountValidationCriteria(player, betChoice, amount, freeBet);
         return bettingTimeValidationCriteria.concat(betAmountValidationCriteria);
@@ -27,7 +27,7 @@ export default class PlaceBetConsumer extends BasePlaceBetConsumer {
         ];
     }
 
-    composeBetAmountValidationCriteria(player: any, _: any, totalAmount: number, __: boolean) {
+    composeBetAmountValidationCriteria(player: any, _: unknown, totalAmount: number, __: boolean) {
         const settings = this.gameData.currencyGroupGames.find((x) => x.groupId.toString() === player.session.currencyGroupId);
         const minBet = Math.max(player.profile.minBet, settings?.minBet ?? 0);
         const maxBet = Math.min(player.profile.maxBet, settings?.maxBet ?? 0);

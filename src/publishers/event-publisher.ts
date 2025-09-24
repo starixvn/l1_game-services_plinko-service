@@ -7,7 +7,7 @@ export default class EventPublisher extends BaseEventPublisher {
     declare gameData: GameData;
 
     publishPlayerResultBoard() {
-        if (this.gameData.playerResultBoard.length === 0) {
+        if (!this.gameData.playerResultBoard?.length) {
             return;
         }
         const chance = new Chance();

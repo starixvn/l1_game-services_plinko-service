@@ -1,6 +1,15 @@
 import { RoundResultConsumer as BaseRoundResultConsumer } from "sc-game-base/src/core/event-consumers";
 import { SeedHelper } from "sc-game-base/src/core/helpers";
 
+type ResultData = {
+    serverSeedHash: string;
+    serverSeed: string;
+    clientSeeds: { name: string; seed: string }[];
+    mergeClientSeed: string;
+    mergeSeed: string;
+    finalHash: string;
+};
+
 export default class RoundResultConsumer extends BaseRoundResultConsumer {
     getResultFromAdmin(playerName: string) {
         const resultFromAdmin = this.gameData.settlementResultFromAdmin;
@@ -21,7 +30,7 @@ export default class RoundResultConsumer extends BaseRoundResultConsumer {
         return this.definition.generateResult(resultData.finalHash);
     }
 
-    generateResultData(playerName: string) {
+    generateResultData(playerName: string): ResultData {
         const { clientSeed } = this.gameData.ingame[playerName];
         const clientSeeds = [{ name: playerName, seed: clientSeed }];
         const serverSeed = this.generateServerSeed();
@@ -39,7 +48,7 @@ export default class RoundResultConsumer extends BaseRoundResultConsumer {
         };
     }
 
-    async createResultDocument(resultData: any, roundId: number) {
+    async createResultDocument(resultData: ResultData, roundId: number) {
         const { serverSeedHash, serverSeed, clientSeeds, mergeClientSeed, mergeSeed, finalHash } = resultData;
         await this.resultsRepository.create({
             roundId,
