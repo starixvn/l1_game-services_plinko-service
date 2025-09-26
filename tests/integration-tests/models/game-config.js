@@ -1,0 +1,27 @@
+import mongoose from "mongoose";
+
+export const GameConfigSchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    enabled: { type: Boolean, required: true },
+    minbet: { type: Number, required: true },
+    maxbet: { type: Number, required: true },
+    disabledround: { type: Number },
+    botenabled: { type: Boolean, default: false },
+    maxbot: { type: Number, required: true },
+    bot_maxbet: { type: Number },
+    bot_minbet: { type: Number },
+    hour_maxbot: { type: Array },
+    disabled_message: { type: String },
+    choices_maxbet: { type: Object },
+    odds: { type: Object },
+    delayStartTime: { type: Number },
+    enableFreeBet: { type: Boolean, default: false },
+    slotsConfig: { type: Object },
+    siteExclusions: { type: Array },
+    exchangeReload: { type: Boolean, default: false },
+    randomMode: { type: Number },
+    gameId: { type: Number },
+    displayName: { type: String },
+    maxWinPerRound: { type: Number },
+    plinkoConfig: { type: Object },
+});
