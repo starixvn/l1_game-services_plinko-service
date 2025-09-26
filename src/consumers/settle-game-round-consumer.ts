@@ -18,7 +18,7 @@ export default class SettleGameRoundConsumer extends BaseSettleGameRoundConsumer
         const slotIndex = this.definition.settle(result) as number;
         const settlementResult: SettlementResult = {
             slotIndex,
-            multiplier: plinkoConfig?.odds?.[gameMode]?.[numberOfRows]?.[slotIndex] ?? 1,
+            multiplier: +(plinkoConfig?.odds?.[gameMode]?.[numberOfRows]?.[slotIndex] ?? 1),
         };
 
         const newRound = await this.createNewRoundDocument(player, rate, roundId, result, settlementResult);

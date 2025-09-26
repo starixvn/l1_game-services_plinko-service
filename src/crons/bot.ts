@@ -17,11 +17,11 @@ export default class Bot extends BaseBot {
         const amount = helpers.numberHelper.getRandomNumberStep5(minBet, maxBet, true);
         const multiplier = this.getMultiplier();
         const betWin = amount * multiplier;
-        this.insertPlayerResultBoard(bot, amount, betWin, multiplier);
+        this.insertPlayerBetList(bot, amount, betWin, multiplier);
     }
 
-    insertPlayerResultBoard(bot: any, amount: number, betWin: number, multiplier: number) {
-        this.gameData.playerResultBoard.push({
+    insertPlayerBetList(bot: any, amount: number, betWin: number, multiplier: number) {
+        this.gameData.playerBetList.push({
             playerName: bot.name,
             amount,
             winAmount: betWin,

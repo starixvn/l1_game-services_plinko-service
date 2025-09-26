@@ -8,3 +8,5 @@ export const GAME_MODE = {
     MEDIUM: 1,
     HIGH: 2,
 };
+
+export const NUMBER_OF_PLAYER_RESULT_BOARD = 10;

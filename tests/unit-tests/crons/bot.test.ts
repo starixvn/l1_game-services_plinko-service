@@ -48,6 +48,7 @@ describe("Bot", () => {
                 },
             },
             playerResultBoard: [],
+            playerBetList: [],
         };
 
         // Create instance
@@ -89,8 +90,8 @@ describe("Bot", () => {
             expect(bot.getMaxBet).toHaveBeenCalledWith(mockBotPlayer, "");
             expect(helpers.numberHelper.getRandomNumberStep5).toHaveBeenCalledWith(minBet, maxBet, true);
             expect(bot.getMultiplier).toHaveBeenCalledWith();
-            expect(mockGameData.playerResultBoard.length).toBe(1);
-            expect(mockGameData.playerResultBoard).toEqual([
+            expect(mockGameData.playerBetList.length).toBe(1);
+            expect(mockGameData.playerBetList).toEqual([
                 {
                     playerName: "TestBot",
                     amount: randomAmount,

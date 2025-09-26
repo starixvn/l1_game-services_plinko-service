@@ -1,8 +1,10 @@
 import { InGameConsumer as BaseInGameConsumer } from "sc-game-base/src/core/event-consumers";
 import RoundQuery from "../query-apis/round-query";
 import { GameConfigs } from "../types";
+import GameData from "../game-data";
 
 export default class InGameConsumer extends BaseInGameConsumer {
+    declare gameData: GameData;
     declare roundQuery: RoundQuery;
 
     async consume(realPlayer: any) {
@@ -18,7 +20,7 @@ export default class InGameConsumer extends BaseInGameConsumer {
     async buildPayload(realPlayer: any): Promise<any> {
         const user = await this.getUserInfo(realPlayer);
         const roundHistory = await this.roundQuery.getListByPlayerId(realPlayer.UID, this.definition.numberOfRoundHistory);
-        const { exchangeRates } = this.gameData;
+        const { exchangeRates, playerResultBoard } = this.gameData;
         const { session } = realPlayer;
         const rate = exchangeRates.code[session.currencyCode] * session.multiplier;
         const gameConfigs = this.getGameConfigs(realPlayer);
@@ -26,6 +28,7 @@ export default class InGameConsumer extends BaseInGameConsumer {
         return {
             gameConfigs,
             roundHistory,
+            playerResultBoard,
             user: { ...user, rate },
         };
     }

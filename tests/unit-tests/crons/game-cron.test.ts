@@ -1,4 +1,5 @@
 import GameCron from "../../../src/crons/game-cron";
+import { maskName } from "../../../src/helpers/mask-name-helper";
 
 // Mock the base class
 const mockGetSettingForNewRound = jest.fn();
@@ -6,17 +7,36 @@ const mockUpdateExchangeRates = jest.fn();
 const mockStartCron = jest.fn();
 const mockCheckGameStatus = jest.fn();
 
-jest.mock("sc-game-base/src/core/crons", () => ({
-    BaseGameCron: class {
-        getSettingForNewRound = mockGetSettingForNewRound;
-        updateExchangeRates = mockUpdateExchangeRates;
-        startCron = mockStartCron;
-        checkGameStatus = mockCheckGameStatus;
-        constructor() {
-            return this;
-        }
+jest.mock("sc-game-base/src/core", () => ({
+    Crons: {
+        BaseGameCron: class {
+            getSettingForNewRound = mockGetSettingForNewRound;
+            updateExchangeRates = mockUpdateExchangeRates;
+            startCron = mockStartCron;
+            checkGameStatus = mockCheckGameStatus;
+            constructor() {
+                return this;
+            }
+        },
+    },
+    BaseEventPublishers: {
+        BaseEventPublisher: {},
     },
 }));
+
+jest.mock("../../../src/helpers/mask-name-helper", () => ({
+    maskName: jest.fn(),
+}));
+
+const mockPickone = jest.fn();
+
+jest.mock(
+    "chance",
+    () =>
+        class {
+            pickone = mockPickone;
+        }
+);
 
 describe("GameCron", () => {
     let gameCron: GameCron;
@@ -48,7 +68,7 @@ describe("GameCron", () => {
             run: jest.fn(),
         };
         mockPublisher = {
-            publishPlayerResultBoard: jest.fn(),
+            publishToAllUsers: jest.fn(),
         };
         // Create instance
         // @ts-ignore
@@ -133,29 +153,31 @@ describe("GameCron", () => {
             expect(mockBot.run).toHaveBeenCalled();
         });
 
-        it("should publish player result board when remaining time is not equal to whole round duration and game is enabled", async () => {
+        it("should publish player bet when remaining time is not equal to whole round duration and game is enabled", async () => {
             // Arrange
             mockGameData.remainingTime = 25;
             mockGameData.disabled = false;
+            gameCron.publishPlayerBet = jest.fn();
 
             // Act
             await gameCron.proceed();
 
             // Assert
-            expect(mockPublisher.publishPlayerResultBoard).toHaveBeenCalled();
+            expect(gameCron.publishPlayerBet).toHaveBeenCalled();
         });
 
-        it("should reset player result board when remaining time is not equal to whole round duration and game is enabled", async () => {
+        it("should reset player bet list when remaining time is not equal to whole round duration and game is enabled", async () => {
             // Arrange
             mockGameData.remainingTime = 25;
             mockGameData.disabled = false;
-            mockGameData.playerResultBoard = [{ playerName: "testPlayer", amount: 100, winAmount: 100 }];
+            mockGameData.playerBetList = [{ playerName: "testPlayer", amount: 100, winAmount: 100 }];
+            gameCron.publishPlayerBet = jest.fn();
 
             // Act
             await gameCron.proceed();
 
             // Assert
-            expect(mockGameData.playerResultBoard).toEqual([]);
+            expect(mockGameData.playerBetList).toEqual([]);
         });
 
         it("should not decrement remaining time when game is disabled", async () => {
@@ -180,6 +202,71 @@ describe("GameCron", () => {
 
             // Assert
             expect(mockGameData.remainingTime).toBe(30);
+        });
+    });
+
+    describe("publishPlayerBet", () => {
+        it("should not publish player bet if player bet list is empty", () => {
+            // Act
+            gameCron.publishPlayerBet();
+
+            // Assert
+            expect(mockPublisher.publishToAllUsers).not.toHaveBeenCalled();
+        });
+
+        it("should publish player bet if player bet list is not empty", () => {
+            // Arrange
+            mockGameData.playerBetList = [{ playerName: "testPlayer", amount: 100, winAmount: 100, multiplier: 1 }];
+            mockPickone.mockReturnValue({ playerName: "testPlayer", amount: 100, winAmount: 100, multiplier: 1 });
+            (maskName as jest.Mock).mockReturnValue("t***yer");
+
+            // Act
+            gameCron.publishPlayerBet();
+
+            // Assert
+            expect(mockPublisher.publishToAllUsers).toHaveBeenCalledWith({
+                playerBet: { playerName: "t***yer", amount: 100, winAmount: 100, multiplier: 1 },
+            });
+        });
+
+        it("should insert player bet into player result board if player result board is not empty", () => {
+            // Arrange
+            mockGameData.playerBetList = [{ playerName: "testPlayer", amount: 100, winAmount: 100, multiplier: 1 }];
+            mockPickone.mockReturnValue({ playerName: "testPlayer", amount: 100, winAmount: 100, multiplier: 1 });
+            (maskName as jest.Mock).mockReturnValue("t***yer");
+
+            // Act
+            gameCron.publishPlayerBet();
+
+            // Assert
+            expect(mockGameData.playerResultBoard).toEqual([{ playerName: "t***yer", amount: 100, winAmount: 100, multiplier: 1 }]);
+        });
+
+        it("should remove the last player bet from player result board if player result board length >= 10", () => {
+            // Arrange
+            mockGameData.playerResultBoard = [
+                { playerName: "t***er1", amount: 100, winAmount: 100, multiplier: 1 },
+                { playerName: "t***er2", amount: 100, winAmount: 100, multiplier: 1 },
+                { playerName: "t***er3", amount: 100, winAmount: 100, multiplier: 1 },
+                { playerName: "t***er4", amount: 100, winAmount: 100, multiplier: 1 },
+                { playerName: "t***er5", amount: 100, winAmount: 100, multiplier: 1 },
+                { playerName: "t***er6", amount: 100, winAmount: 100, multiplier: 1 },
+                { playerName: "t***er7", amount: 100, winAmount: 100, multiplier: 1 },
+                { playerName: "t***er8", amount: 100, winAmount: 100, multiplier: 1 },
+                { playerName: "t***er9", amount: 100, winAmount: 100, multiplier: 1 },
+                { playerName: "t***r10", amount: 100, winAmount: 100, multiplier: 1 },
+            ];
+            mockGameData.playerBetList = [{ playerName: "testPlayer", amount: 100, winAmount: 100, multiplier: 1 }];
+            mockPickone.mockReturnValue({ playerName: "testPlayer", amount: 100, winAmount: 100, multiplier: 1 });
+            (maskName as jest.Mock).mockReturnValue("t***yer");
+
+            // Act
+            gameCron.publishPlayerBet();
+
+            // Assert
+            expect(mockGameData.playerResultBoard.length).toEqual(10);
+            expect(mockGameData.playerResultBoard[0]).toEqual({ playerName: "t***yer", amount: 100, winAmount: 100, multiplier: 1 });
+            expect(mockGameData.playerResultBoard[9]).toEqual({ playerName: "t***er9", amount: 100, winAmount: 100, multiplier: 1 });
         });
     });
 });

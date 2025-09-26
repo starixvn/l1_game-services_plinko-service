@@ -49,11 +49,11 @@ export default class ProcessBetQueue extends BaseProcessBetQueue {
         const placingBetResult = this.generatePlacingBetResult(player, response, payload, rate);
         const finish = await this.settleGameRoundConsumer.settle(player, roundId, rate);
         this.placeBetPublisher.publishToUser(player.UID, { ...placingBetResult, finish });
-        this.insertPlayerResultBoard(player, finish);
+        this.insertPlayerBetList(player, finish);
     }
 
-    insertPlayerResultBoard(player: any, finish: { amount: number; winAmount: number; settlementResult: SettlementResult } | null) {
-        this.gameData.playerResultBoard.push({
+    insertPlayerBetList(player: any, finish: { amount: number; winAmount: number; settlementResult: SettlementResult } | null) {
+        this.gameData.playerBetList.push({
             playerName: player.profile.name,
             amount: finish?.amount ?? 0,
             winAmount: finish?.winAmount ?? 0,

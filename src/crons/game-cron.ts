@@ -1,10 +1,12 @@
-import { BaseGameCron } from "sc-game-base/src/core/crons";
-import EventPublisher from "../publishers/event-publisher";
+import { Crons, BaseEventPublishers } from "sc-game-base/src/core";
 import GameData from "../game-data";
+import Chance from "chance";
+import { maskName } from "../helpers/mask-name-helper";
+import { NUMBER_OF_PLAYER_RESULT_BOARD } from "../constants";
 
-export default class GameCron extends BaseGameCron {
+export default class GameCron extends Crons.BaseGameCron {
     declare gameData: GameData;
-    publisher: EventPublisher;
+    publisher: BaseEventPublishers.BaseEventPublisher;
 
     constructor(props: any) {
         super(props);
@@ -30,15 +32,32 @@ export default class GameCron extends BaseGameCron {
         if (isEnabled) {
             this.gameData.remainingTime--;
             await this.bot.run();
-            this.publisher.publishPlayerResultBoard();
-            this.resetPlayerResultBoard();
+            this.publishPlayerBet();
+            this.resetPlayerBetList();
         }
         if (this.gameData.remainingTime < 0) {
             this.gameData.remainingTime = wholeRound;
         }
     }
 
-    resetPlayerResultBoard() {
-        this.gameData.playerResultBoard = [];
+    publishPlayerBet() {
+        if (!this.gameData.playerBetList?.length) {
+            return;
+        }
+        const chance = new Chance();
+        const { playerName, amount, winAmount, multiplier } = chance.pickone(this.gameData.playerBetList);
+        const playerBet = {
+            playerName: maskName(playerName),
+            amount,
+            winAmount,
+            multiplier,
+        };
+        this.gameData.playerResultBoard.unshift(playerBet);
+        this.gameData.playerResultBoard.length > NUMBER_OF_PLAYER_RESULT_BOARD && this.gameData.playerResultBoard.pop();
+        this.publisher.publishToAllUsers({ playerBet });
+    }
+
+    resetPlayerBetList() {
+        this.gameData.playerBetList = [];
     }
 }

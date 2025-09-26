@@ -56,6 +56,7 @@ describe("ProcessBetQueue", () => {
             ingame: {},
             gameConfigs: { enabled: true, plinkoConfig: { numberOfGameModes: 3 } },
             playerResultBoard: [],
+            playerBetList: [],
         };
 
         mockDefinition = {
@@ -189,8 +190,8 @@ describe("ProcessBetQueue", () => {
                 ...expectedPlacingBetResult,
                 finish: expectedFinish,
             });
-            expect(mockGameData.playerResultBoard.length).toBe(1);
-            expect(mockGameData.playerResultBoard).toEqual([
+            expect(mockGameData.playerBetList.length).toBe(1);
+            expect(mockGameData.playerBetList).toEqual([
                 {
                     playerName: mockPlayer.profile.name,
                     amount: mockPayload.amount,

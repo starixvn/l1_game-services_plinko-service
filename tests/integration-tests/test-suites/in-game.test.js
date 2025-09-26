@@ -94,4 +94,15 @@ describe("in game", () => {
         expect(roundHistory[0].result).toEqual([1, 1, 0, 1, 1, 0, 0, 0]);
         expect(roundHistory[0].settlementResult).toEqual({ slotIndex: 4, multiplier: 5 });
     });
+
+    it("should receive player result board", async () => {
+        // Arrange
+        client.sendInGameEvent();
+
+        // Act
+        const { playerResultBoard } = await client.handleGameEvent((data) => data.playerResultBoard);
+
+        // Assert
+        expect(typeof playerResultBoard).toEqual([]);
+    });
 });
