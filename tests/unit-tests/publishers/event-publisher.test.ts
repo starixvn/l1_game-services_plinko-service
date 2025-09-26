@@ -51,7 +51,7 @@ describe("EventPublisher", () => {
 
         it("should publish player bet result", () => {
             // Arrange
-            const data = { playerName: "John Doe", amount: 100, winAmount: 100 };
+            const data = { playerName: "John Doe", amount: 100, winAmount: 100, multiplier: 1 };
             mockGameData.playerResultBoard = [data];
             (maskName as jest.Mock).mockReturnValue("J***Doe");
             mockPickone.mockReturnValue(data);
@@ -61,7 +61,9 @@ describe("EventPublisher", () => {
 
             // Assert
             expect(maskName).toHaveBeenCalledWith("John Doe");
-            expect(publisher.publishToAllUsers).toHaveBeenCalledWith({ playerBet: { playerName: "J***Doe", amount: 100, winAmount: 100 } });
+            expect(publisher.publishToAllUsers).toHaveBeenCalledWith({
+                playerBet: { playerName: "J***Doe", amount: 100, winAmount: 100, multiplier: 1 },
+            });
         });
     });
 });

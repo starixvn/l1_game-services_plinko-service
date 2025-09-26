@@ -195,6 +195,7 @@ describe("ProcessBetQueue", () => {
                     playerName: mockPlayer.profile.name,
                     amount: mockPayload.amount,
                     winAmount: expectedFinish.winAmount,
+                    multiplier: expectedFinish.settlementResult.multiplier,
                 },
             ]);
         });

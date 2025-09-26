@@ -11,11 +11,12 @@ export default class EventPublisher extends BaseEventPublisher {
             return;
         }
         const chance = new Chance();
-        const { playerName, amount, winAmount } = chance.pickone(this.gameData.playerResultBoard);
+        const { playerName, amount, winAmount, multiplier } = chance.pickone(this.gameData.playerResultBoard);
         const playerBet = {
             playerName: maskName(playerName),
             amount,
             winAmount,
+            multiplier,
         };
         this.publishToAllUsers({ playerBet });
     }
