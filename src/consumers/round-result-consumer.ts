@@ -12,7 +12,7 @@ type ResultData = {
 
 export default class RoundResultConsumer extends BaseRoundResultConsumer {
     getResultFromAdmin(playerName: string) {
-        const resultFromAdmin = this.gameData.settlementResultFromAdmin;
+        const resultFromAdmin = this.gameData.settlementResultFromAdmin?.result;
         if (resultFromAdmin?.playerName === playerName) {
             this.gameData.settlementResultFromAdmin = {};
             return resultFromAdmin.result;
