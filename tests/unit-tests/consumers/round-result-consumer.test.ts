@@ -58,7 +58,7 @@ describe("RoundResultConsumer", () => {
         it("should return admin result when player name matches", () => {
             // Arrange
             const playerName = "testPlayer";
-            const expectedResult = [1, 0, 1, 0];
+            const expectedResult = {playerName: playerName, result: [1, 0, 1, 0]};
             mockGameData.settlementResultFromAdmin = {
                 playerName,
                 result: expectedResult,
@@ -68,7 +68,7 @@ describe("RoundResultConsumer", () => {
             const result = roundResultConsumer.getResultFromAdmin(playerName);
 
             // Assert
-            expect(result).toEqual(expectedResult);
+            expect(result).toEqual(expectedResult.result);
             expect(mockGameData.settlementResultFromAdmin).toEqual({});
         });
 
@@ -77,7 +77,7 @@ describe("RoundResultConsumer", () => {
             const playerName = "testPlayer";
             mockGameData.settlementResultFromAdmin = {
                 playerName: "differentPlayer",
-                result: [1, 0, 1, 0],
+                result: {playerName: "differentPlayer", result: [1, 0, 1, 0]},
             };
 
             // Act
@@ -87,7 +87,7 @@ describe("RoundResultConsumer", () => {
             expect(result).toBeNull();
             expect(mockGameData.settlementResultFromAdmin).toEqual({
                 playerName: "differentPlayer",
-                result: [1, 0, 1, 0],
+                result: {playerName: "differentPlayer", result: [1, 0, 1, 0]},
             });
         });
 
@@ -118,7 +118,7 @@ describe("RoundResultConsumer", () => {
             // Arrange
             const playerName = "testPlayer";
             const roundId = 123;
-            const adminResult = [1, 1, 1, 1];
+            const adminResult = {playerName, result: [1, 1, 1, 1]};
             mockGameData.settlementResultFromAdmin = {
                 playerName,
                 result: adminResult,
@@ -129,7 +129,7 @@ describe("RoundResultConsumer", () => {
             const result = await roundResultConsumer.generateResultByBet(playerName, roundId);
 
             // Assert
-            expect(result).toEqual(adminResult);
+            expect(result).toEqual(adminResult.result);
             expect(mockDefinition.generateResult).not.toHaveBeenCalled();
             expect(roundResultConsumer.createResultDocument).not.toHaveBeenCalled();
         });
