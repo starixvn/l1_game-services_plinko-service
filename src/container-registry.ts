@@ -16,7 +16,7 @@ export default class ContainerRegistry extends Core.ContainerRegistry {
             placeBetConsumer: asClass(PlaceBetConsumer).singleton(),
             roundResultConsumer: asClass(RoundResultConsumer).singleton(),
             settleGameRoundConsumer: asClass(SettleGameRoundConsumer).singleton().proxy(),
-            userSignInConsumer: asClass(Table.EventConsumers.TableUserSignInConsumer).singleton(),
+            userSignInConsumer: asClass(Table.EventConsumers.TableUserSignInConsumer).singleton().proxy(),
         });
     }
 

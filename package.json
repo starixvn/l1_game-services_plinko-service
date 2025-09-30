@@ -9,7 +9,7 @@
         "test-coverage": "jest --collect-coverage --testPathPattern=tests/unit-tests/",
         "integration-test": "npm run build && jest --config ./jest.integration-test.config.cjs --testPathPattern=tests/integration-tests/ --detectOpenHandles --forceExit",
         "dev": "tsx watch ./src/app.ts",
-        "dev-build": "nodemon --experimental-loader=extensionless --experimental-specifier-resolution=node --watch ./build ./build/app.js",
+        "dev-build": "nodemon --import=extensionless/register --experimental-specifier-resolution=node --watch ./build ./build/app.js",
         "stats": "tsx watch ./rtp/index.ts",
         "reg": "npm set registry http://npm.lumigame.com"
     },
@@ -24,16 +24,14 @@
     "dependencies": {
         "awilix": "^8.0.0",
         "chance": "^1.1.11",
-        "extensionless": "1.9.6",
-        "mongoose": "6.13.6",
-        "sc-game-base": "5.5.0",
-        "sc-instrument": "1.1.1"
+        "extensionless": "^1.9.9",
+        "mongoose": "6.13.8",
+        "sc-game-base": "6.1.0"
     },
     "resolutions": {
-        "mongoose": "6.13.6",
         "form-data": "4.0.4",
-        "sc-common": "2.0.0",
-        "sc-instrument": "1.1.1"
+        "mongoose": "6.13.8",
+        "mongoose-long": "0.8.0"
     },
     "devDependencies": {
         "@babel/preset-env": "^7.23.9",

@@ -23,12 +23,12 @@ export type PlinkoRound = {
     clientSeed: string;
     currency: string;
     siteId: string;
+    siteName: string;
     playerId: string;
     operatorId: string;
     appType: number;
     gameMode: number;
     numberOfRows: number;
-    freeBet: boolean;
     exchangeRateId: number;
 };
 export type GameConfigs = {

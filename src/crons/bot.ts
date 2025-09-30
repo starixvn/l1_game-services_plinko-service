@@ -7,9 +7,7 @@ import GameData from "../game-data";
 export default class Bot extends BaseBot {
     declare gameData: GameData;
 
-    isDuringBetTime() {
-        return true;
-    }
+    isDuringBetTime = () => true;
 
     async placeBet(bot: any): Promise<void> {
         const maxBet = this.getMaxBet(bot, "");

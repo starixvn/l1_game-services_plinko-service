@@ -7,6 +7,7 @@ import GameData from "../game-data";
 export default class ProcessBetQueue extends BaseProcessBetQueue {
     declare settleGameRoundConsumer: SettleGameRoundConsumer;
     declare gameData: GameData;
+    declare executeInterceptorEvent: (event: string, interceptors: any, context: any) => Promise<void>;
 
     constructor(props: any) {
         super(props);
@@ -23,6 +24,10 @@ export default class ProcessBetQueue extends BaseProcessBetQueue {
         this.gameData.ingame[player.profile.name] && delete this.gameData.ingame[player.profile.name];
     }
 
+    async validateBetRequest(_: unknown, __: unknown) {
+        return true;
+    }
+
     formatApiBetInfo(payload: PlaceBetPayload) {
         return {
             amount: payload.amount,
@@ -37,19 +42,24 @@ export default class ProcessBetQueue extends BaseProcessBetQueue {
         };
     }
 
-    async validateBetRequest(_: unknown, __: unknown) {
-        return true;
-    }
-
-    async handleSuccessBet(player: any, response: any, roundId: number, payload: PlaceBetPayload) {
+    // @ts-ignore
+    async handleSuccessBet(player: any, response: any, roundId: number, payload: PlaceBetPayload, applicableInterceptors: any) {
         const rate = this.calculateCurrencyRate(player.session);
-        if (player.profile.minBet !== response.minBet || player.profile.maxBet !== response.maxBet) {
-            this.updateUserStakeLevel(player, response.minBet, response.maxBet);
-        }
         const placingBetResult = this.generatePlacingBetResult(player, response, payload, rate);
         const finish = await this.settleGameRoundConsumer.settle(player, roundId, rate);
+        if (applicableInterceptors) {
+            await this.executeInterceptorEvent("afterSuccessEvent", applicableInterceptors, {
+                player,
+                bet: payload,
+                balance: response,
+                betTime: finish?.time,
+            });
+        }
         this.placeBetPublisher.publishToUser(player.UID, { ...placingBetResult, finish });
         this.insertPlayerBetList(player, finish);
+        if (player.profile.minBet !== response?.minBet || player.profile.maxBet !== response?.maxBet) {
+            this.updateUserStakeLevel(player, response?.minBet, response?.maxBet);
+        }
     }
 
     insertPlayerBetList(player: any, finish: { amount: number; winAmount: number; settlementResult: SettlementResult } | null) {

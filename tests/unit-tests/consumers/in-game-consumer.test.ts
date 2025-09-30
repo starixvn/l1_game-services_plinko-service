@@ -3,10 +3,12 @@ import RoundQuery from "../../../src/query-apis/round-query";
 
 // Mock the base class
 const mockGetUserInfo = jest.fn();
+const mockTrackUserSignIn = jest.fn();
 
 jest.mock("sc-game-base/src/core/event-consumers", () => ({
     InGameConsumer: class {
         getUserInfo = mockGetUserInfo;
+        trackUserSignIn = mockTrackUserSignIn;
         constructor() {
             return this;
         }
@@ -131,6 +133,7 @@ describe("InGameConsumer", () => {
                 um_message: "Game disabled",
             });
             expect(mockSocketClient.emit).toHaveBeenCalledWith("plinko", expectedPayload);
+            expect(mockTrackUserSignIn).toHaveBeenCalledWith(mockRealPlayer, expectedPayload.user);
         });
     });
 });

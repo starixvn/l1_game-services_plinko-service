@@ -26,6 +26,7 @@ const Schema = new mongoose.Schema({
     currency: { type: String },
     rate: { type: Number, required: true },
     siteId: { type: String },
+    siteName: { type: String },
     playerId: { type: String },
     operatorId: { type: String, required: false },
     paid: { type: Boolean, default: false },

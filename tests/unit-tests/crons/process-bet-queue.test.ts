@@ -10,12 +10,13 @@ const mockUpdateUserStakeLevel = jest.fn();
 const mockPlaceBetPublisher = {
     publishToUser: jest.fn(),
 };
-
+const mockExecuteInterceptorEvent = jest.fn();
 jest.mock("sc-game-base/src/core/crons", () => ({
     ProcessBetQueue: class {
         calculateCurrencyRate = mockCalculateCurrencyRate;
         updateUserStakeLevel = mockUpdateUserStakeLevel;
         placeBetPublisher = mockPlaceBetPublisher;
+        executeInterceptorEvent = mockExecuteInterceptorEvent;
         async proceedBet(player: any, payload: any) {
             mockProceedBet(player, payload);
         }
@@ -180,7 +181,7 @@ describe("ProcessBetQueue", () => {
             mockPlayer.profile.maxBet = 1000; // Different from response
 
             // Act
-            await processBetQueue.handleSuccessBet(mockPlayer, response, roundId, mockPayload);
+            await processBetQueue.handleSuccessBet(mockPlayer, response, roundId, mockPayload, null);
 
             // Assert
             expect(mockCalculateCurrencyRate).toHaveBeenCalledWith(mockPlayer.session);
@@ -215,10 +216,51 @@ describe("ProcessBetQueue", () => {
             mockSettle.mockResolvedValue(null);
 
             // Act
-            await processBetQueue.handleSuccessBet(mockPlayer, response, roundId, mockPayload);
+            await processBetQueue.handleSuccessBet(mockPlayer, response, roundId, mockPayload, null);
 
             // Assert
             expect(mockUpdateUserStakeLevel).not.toHaveBeenCalled();
+        });
+
+        it("should execute interceptor event when applicableInterceptors is not null", async () => {
+            // Arrange
+            // Arrange
+            const response = {
+                minBet: 10,
+                maxBet: 1000,
+                balance: 1500,
+            };
+            const roundId = 101;
+            const expectedRate = 1.5;
+            const expectedPlacingBetResult = {
+                endBet: 100,
+                ownBets: { gameMode: 1, numberOfRows: 12 },
+                user: response,
+            };
+            const expectedFinish = {
+                result: [1, 0, 1, 0, 0, 0, 0, 0, 0],
+                settlementResult: { slotIndex: 2, multiplier: 2.0 },
+                winAmount: 200,
+                amount: 100,
+                reachMaxWin: false,
+                time: mockDate,
+            };
+
+            mockCalculateCurrencyRate.mockReturnValue(expectedRate);
+            mockSettle.mockResolvedValue(expectedFinish);
+
+            // Act
+            await processBetQueue.handleSuccessBet(mockPlayer, response, roundId, mockPayload, [{}]);
+
+            // Assert
+            expect(mockCalculateCurrencyRate).toHaveBeenCalledWith(mockPlayer.session);
+            expect(mockSettle).toHaveBeenCalledWith(mockPlayer, roundId, expectedRate);
+            expect(mockExecuteInterceptorEvent).toHaveBeenCalledWith("afterSuccessEvent", [{}], {
+                player: mockPlayer,
+                bet: mockPayload,
+                balance: response,
+                betTime: expectedFinish.time,
+            });
         });
     });
 });

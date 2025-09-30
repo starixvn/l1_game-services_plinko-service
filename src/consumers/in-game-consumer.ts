@@ -6,6 +6,7 @@ import GameData from "../game-data";
 export default class InGameConsumer extends BaseInGameConsumer {
     declare gameData: GameData;
     declare roundQuery: RoundQuery;
+    declare trackUserSignIn: (realPlayer: any, user: any) => Promise<void>;
 
     async consume(realPlayer: any) {
         const { gameConfigs, umMessages } = this.gameData;
@@ -15,6 +16,7 @@ export default class InGameConsumer extends BaseInGameConsumer {
         }
         const payload = await this.buildPayload(realPlayer);
         realPlayer.socketClient.emit(this.definition.name, payload);
+        await this.trackUserSignIn(realPlayer, payload.user);
     }
 
     async buildPayload(realPlayer: any): Promise<any> {

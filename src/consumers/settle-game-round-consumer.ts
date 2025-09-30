@@ -25,7 +25,14 @@ export default class SettleGameRoundConsumer extends BaseSettleGameRoundConsumer
 
         if (newRound) {
             await this.settleBet(newRound);
-            return { result, settlementResult, winAmount: +newRound.betWin, amount: +newRound.amount, reachMaxWin: newRound.reachMaxWin };
+            return {
+                result,
+                settlementResult,
+                winAmount: +newRound.betWin,
+                amount: +newRound.amount,
+                reachMaxWin: newRound.reachMaxWin,
+                time: newRound.time,
+            };
         }
         return null;
     }
@@ -61,6 +68,7 @@ export default class SettleGameRoundConsumer extends BaseSettleGameRoundConsumer
             clientSeed,
             currency: player.session.currencyName,
             siteId: player.session.siteId,
+            siteName: player.session.siteName,
             playerId: player.session.playerId,
             operatorId: player.session.operatorId,
             appType: player.session.system,
@@ -68,7 +76,6 @@ export default class SettleGameRoundConsumer extends BaseSettleGameRoundConsumer
             numberOfRows,
             result,
             settlementResult,
-            freeBet: false,
             exchangeRateId: exchangeRates.exId,
         };
         return this.roundsRepository.create(newRound);

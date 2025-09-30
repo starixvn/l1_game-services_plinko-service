@@ -4,7 +4,7 @@ import { SeedHelper } from "sc-game-base/src/core/helpers";
 type ResultData = {
     serverSeedHash: string;
     serverSeed: string;
-    clientSeeds: { name: string; seed: string }[];
+    clientSeeds: { name: string; clientSeed: string }[];
     mergeClientSeed: string;
     mergeSeed: string;
     finalHash: string;
@@ -32,7 +32,7 @@ export default class RoundResultConsumer extends BaseRoundResultConsumer {
 
     generateResultData(playerName: string): ResultData {
         const { clientSeed } = this.gameData.ingame[playerName];
-        const clientSeeds = [{ name: playerName, seed: clientSeed }];
+        const clientSeeds = [{ name: playerName, clientSeed }];
         const serverSeed = this.generateServerSeed();
         const serverSeedHash = SeedHelper.getSHA256Hash(serverSeed);
         const mergeClientSeed = SeedHelper.getMergeClientSeed(clientSeeds);

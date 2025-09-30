@@ -54,4 +54,7 @@ export default {
     gameManagementApiSettings: {
         BASE: "http://l2-game-management-service-klprod-service:5000",
     },
+    trackingApiSettings: {
+        baseUrl: "http://l2-user-tracking-api-klprod-service:5000",
+    },
 };

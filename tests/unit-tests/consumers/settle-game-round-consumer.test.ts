@@ -86,6 +86,7 @@ describe("SettleGameRoundConsumer", () => {
             session: {
                 currencyName: "USD",
                 siteId: "site1",
+                siteName: "site1",
                 playerId: "player1",
                 operatorId: "op1",
                 system: 10,
@@ -133,6 +134,7 @@ describe("SettleGameRoundConsumer", () => {
                 winAmount: 250,
                 amount: 100,
                 reachMaxWin: false,
+                time: mockDate,
             });
         });
 
@@ -228,6 +230,7 @@ describe("SettleGameRoundConsumer", () => {
                 clientSeed: "test-seed",
                 currency: "USD",
                 siteId: "site1",
+                siteName: "site1",
                 playerId: "player1",
                 operatorId: "op1",
                 appType: 10,
@@ -235,7 +238,6 @@ describe("SettleGameRoundConsumer", () => {
                 numberOfRows: 12,
                 result,
                 settlementResult,
-                freeBet: false,
                 exchangeRateId: 123,
             };
 
@@ -279,6 +281,7 @@ describe("SettleGameRoundConsumer", () => {
                 clientSeed: "1234",
                 currency: "USD",
                 siteId: "site1",
+                siteName: "site1",
                 playerId: "player1",
                 operatorId: "op1",
                 appType: 10,
@@ -286,7 +289,6 @@ describe("SettleGameRoundConsumer", () => {
                 numberOfRows: 16,
                 result,
                 settlementResult,
-                freeBet: false,
                 exchangeRateId: 123,
             };
             mockRoundsRepository.create.mockResolvedValue(expectedRound);

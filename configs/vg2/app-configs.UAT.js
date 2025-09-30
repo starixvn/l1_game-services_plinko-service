@@ -54,4 +54,7 @@ export default {
     gameManagementApiSettings: {
         BASE: "http://l2-game-management-service-uat-service:5000",
     },
+    trackingApiSettings: {
+        baseUrl: "http://l2-user-tracking-api-uat-service:5000",
+    },
 };

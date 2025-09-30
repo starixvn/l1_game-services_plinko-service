@@ -53,5 +53,8 @@ export default {
     gameManagementApiSettings: {
         BASE: "http://localhost:5000",
     },
+    trackingApiSettings: {
+        baseUrl: "http://localhost:5000",
+    },
     disableCors: true,
 };

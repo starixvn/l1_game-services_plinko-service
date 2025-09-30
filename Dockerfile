@@ -1,4 +1,4 @@
-FROM hub.lumigame.com/base/node:20.9.0-alpine AS builder
+FROM hub.lumigame.com/base/node:20-alpine-25h2 AS builder
 WORKDIR /app
 COPY package.json yarn.lock .modprunerrc ./
 RUN npm run reg \
@@ -10,7 +10,7 @@ RUN rm -rf ./node_modules
 RUN yarn install --production \
     && npx mod-pruner prune --force 
 
-FROM hub.lumigame.com/base/node:20.9.0-alpine
+FROM hub.lumigame.com/base/node:20-alpine-25h2
 ARG NODE_ENV=production
 ENV NODE_ENV $NODE_ENV
 RUN mkdir /app && chown node:node /app
@@ -24,4 +24,4 @@ COPY --from=builder /app/package.json ./
 COPY --from=builder /app/yarn.lock ./
 
 EXPOSE 5000
-CMD [ "node", "--experimental-loader=extensionless","./app.js" ]
+CMD [ "node", "--import=extensionless/register","./app.js" ]

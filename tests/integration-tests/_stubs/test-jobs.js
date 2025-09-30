@@ -2,7 +2,7 @@ import { spawn } from "child_process";
 
 export const startSetupDataProcess = (processId, overrideGameConfigs, onSetupDataDone) => {
     const setupDataProcess = spawn("node", [
-        "--experimental-loader=extensionless",
+        "--import=extensionless/register",
         "./tests/integration-tests/_stubs/test-data-setup.js",
         "-pid",
         `${processId}`,
@@ -27,7 +27,7 @@ export const startSetupDataProcess = (processId, overrideGameConfigs, onSetupDat
 
 export const startServiceProcess = (processId, overrideAppConfigs, onServiceStarted) => {
     const serviceProcess = spawn("node", [
-        "--experimental-loader=extensionless",
+        "--import=extensionless/register",
         "./tests/integration-tests/_stubs/game-service-app.js",
         "-pid",
         `${processId}`,

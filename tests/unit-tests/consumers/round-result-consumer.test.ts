@@ -58,7 +58,7 @@ describe("RoundResultConsumer", () => {
         it("should return admin result when player name matches", () => {
             // Arrange
             const playerName = "testPlayer";
-            const expectedResult = {playerName: playerName, result: [1, 0, 1, 0]};
+            const expectedResult = { playerName: playerName, result: [1, 0, 1, 0] };
             mockGameData.settlementResultFromAdmin = {
                 playerName,
                 result: expectedResult,
@@ -77,7 +77,7 @@ describe("RoundResultConsumer", () => {
             const playerName = "testPlayer";
             mockGameData.settlementResultFromAdmin = {
                 playerName: "differentPlayer",
-                result: {playerName: "differentPlayer", result: [1, 0, 1, 0]},
+                result: { playerName: "differentPlayer", result: [1, 0, 1, 0] },
             };
 
             // Act
@@ -87,7 +87,7 @@ describe("RoundResultConsumer", () => {
             expect(result).toBeNull();
             expect(mockGameData.settlementResultFromAdmin).toEqual({
                 playerName: "differentPlayer",
-                result: {playerName: "differentPlayer", result: [1, 0, 1, 0]},
+                result: { playerName: "differentPlayer", result: [1, 0, 1, 0] },
             });
         });
 
@@ -118,7 +118,7 @@ describe("RoundResultConsumer", () => {
             // Arrange
             const playerName = "testPlayer";
             const roundId = 123;
-            const adminResult = {playerName, result: [1, 1, 1, 1]};
+            const adminResult = { playerName, result: [1, 1, 1, 1] };
             mockGameData.settlementResultFromAdmin = {
                 playerName,
                 result: adminResult,
@@ -155,7 +155,7 @@ describe("RoundResultConsumer", () => {
                 roundId: roundId,
                 serverSeedHash: "serverSeedHash",
                 serverSeed: "serverSeed",
-                clientSeeds: [{ name: playerName, seed: "1234" }],
+                clientSeeds: [{ name: playerName, clientSeed: "1234" }],
                 mergeClientSeed: "mergedSeed",
                 mergeSeed: "serverSeedmergedSeed",
                 finalHash: "finalHash",
@@ -190,7 +190,7 @@ describe("RoundResultConsumer", () => {
             expect(result).toEqual({
                 serverSeedHash: "serverSeedHash",
                 serverSeed: "serverSeed",
-                clientSeeds: [{ name: playerName, seed: "1234" }],
+                clientSeeds: [{ name: playerName, clientSeed: "1234" }],
                 mergeClientSeed: "mergedSeed",
                 mergeSeed: "serverSeedmergedSeed",
                 finalHash: "finalHash",
