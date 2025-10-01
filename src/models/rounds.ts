@@ -11,7 +11,7 @@ const settlementResultSchema = new mongoose.Schema(
 );
 
 const Schema = new mongoose.Schema({
-    id: { type: Number, required: true },
+    id: { type: Number, required: true }, // Round ID
     uid: { type: String, required: true },
     name: { type: String, required: true },
 
@@ -28,7 +28,7 @@ const Schema = new mongoose.Schema({
     siteId: { type: String },
     siteName: { type: String },
     playerId: { type: String },
-    operatorId: { type: String, required: false },
+    operatorId: { type: String },
     paid: { type: Boolean, default: false },
     appType: { type: Number, default: 0 },
 

@@ -7,12 +7,20 @@ import GameData from "../game-data";
 export default class Bot extends BaseBot {
     declare gameData: GameData;
 
-    isDuringBetTime = () => true;
+    async run() {
+        if (this.bots.length && this.gameData.gameConfigs?.botenabled) {
+            const botsToBet = this.chance.integer({ min: 1, max: this.bots.length });
+            for (let i = 0; i < botsToBet; i++) {
+                const bot = this.chance.pickone(this.bots);
+                bot && (await this.placeBet(bot));
+            }
+        }
+    }
 
-    async placeBet(bot: any): Promise<void> {
+    async placeBet(bot: any) {
         const maxBet = this.getMaxBet(bot, "");
         const minBet = this.getMinBet();
-        const amount = helpers.numberHelper.getRandomNumberStep5(minBet, maxBet, true);
+        const amount = helpers.numberHelper.getRandomNumberStep5(minBet, maxBet, false);
         const multiplier = this.getMultiplier();
         const betWin = amount * multiplier;
         this.insertPlayerBetList(bot, amount, betWin, multiplier);

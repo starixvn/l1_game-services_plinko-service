@@ -57,13 +57,174 @@ describe("Bot", () => {
         bot.gameData = mockGameData;
     });
 
-    describe("isDuringBetTime", () => {
-        it("should return true", () => {
+    describe("run", () => {
+        beforeEach(() => {
+            // Mock chance methods
+            bot.chance = {
+                integer: jest.fn(),
+                pickone: jest.fn(),
+            } as any;
+            bot.placeBet = jest.fn();
+        });
+
+        it("should not run when bots array is empty", async () => {
+            // Arrange
+            bot.bots = [];
+            mockGameData.gameConfigs.botenabled = true;
+
             // Act
-            const result = bot.isDuringBetTime();
+            await bot.run();
 
             // Assert
-            expect(result).toBe(true);
+            expect(bot.chance.integer).not.toHaveBeenCalled();
+            expect(bot.chance.pickone).not.toHaveBeenCalled();
+            expect(bot.placeBet).not.toHaveBeenCalled();
+        });
+
+        it("should not run when botenabled is false", async () => {
+            // Arrange
+            bot.bots = [{ name: "Bot1" }];
+            mockGameData.gameConfigs.botenabled = false;
+
+            // Act
+            await bot.run();
+
+            // Assert
+            expect(bot.chance.integer).not.toHaveBeenCalled();
+            expect(bot.chance.pickone).not.toHaveBeenCalled();
+            expect(bot.placeBet).not.toHaveBeenCalled();
+        });
+
+        it("should not run when botenabled is undefined", async () => {
+            // Arrange
+            bot.bots = [{ name: "Bot1" }];
+            mockGameData.gameConfigs.botenabled = undefined;
+
+            // Act
+            await bot.run();
+
+            // Assert
+            expect(bot.chance.integer).not.toHaveBeenCalled();
+            expect(bot.chance.pickone).not.toHaveBeenCalled();
+            expect(bot.placeBet).not.toHaveBeenCalled();
+        });
+
+        it("should not run when gameConfigs is undefined", async () => {
+            // Arrange
+            bot.bots = [{ name: "Bot1" }];
+            mockGameData.gameConfigs = undefined;
+
+            // Act
+            await bot.run();
+
+            // Assert
+            expect(bot.chance.integer).not.toHaveBeenCalled();
+            expect(bot.chance.pickone).not.toHaveBeenCalled();
+            expect(bot.placeBet).not.toHaveBeenCalled();
+        });
+
+        it("should run and place bets for selected bots when conditions are met", async () => {
+            // Arrange
+            const mockBots = [{ name: "Bot1" }, { name: "Bot2" }, { name: "Bot3" }];
+            bot.bots = mockBots;
+            mockGameData.gameConfigs.botenabled = true;
+            (bot.chance.integer as jest.Mock).mockReturnValue(2);
+            (bot.chance.pickone as jest.Mock).mockReturnValueOnce(mockBots[0]).mockReturnValueOnce(mockBots[1]);
+
+            // Act
+            await bot.run();
+
+            // Assert
+            expect(bot.chance.integer).toHaveBeenCalledWith({ min: 1, max: 3 });
+            expect(bot.chance.pickone).toHaveBeenCalledTimes(2);
+            expect(bot.chance.pickone).toHaveBeenCalledWith(mockBots);
+            expect(bot.placeBet).toHaveBeenCalledTimes(2);
+            expect(bot.placeBet).toHaveBeenCalledWith(mockBots[0]);
+            expect(bot.placeBet).toHaveBeenCalledWith(mockBots[1]);
+        });
+
+        it("should run with minimum number of bots when chance.integer returns 1", async () => {
+            // Arrange
+            const mockBots = [{ name: "Bot1" }, { name: "Bot2" }];
+            bot.bots = mockBots;
+            mockGameData.gameConfigs.botenabled = true;
+            (bot.chance.integer as jest.Mock).mockReturnValue(1);
+            (bot.chance.pickone as jest.Mock).mockReturnValue(mockBots[0]);
+
+            // Act
+            await bot.run();
+
+            // Assert
+            expect(bot.chance.integer).toHaveBeenCalledWith({ min: 1, max: 2 });
+            expect(bot.chance.pickone).toHaveBeenCalledTimes(1);
+            expect(bot.placeBet).toHaveBeenCalledTimes(1);
+            expect(bot.placeBet).toHaveBeenCalledWith(mockBots[0]);
+        });
+
+        it("should run with maximum number of bots when chance.integer returns bots.length", async () => {
+            // Arrange
+            const mockBots = [{ name: "Bot1" }, { name: "Bot2" }];
+            bot.bots = mockBots;
+            mockGameData.gameConfigs.botenabled = true;
+            (bot.chance.integer as jest.Mock).mockReturnValue(2);
+            (bot.chance.pickone as jest.Mock).mockReturnValueOnce(mockBots[0]).mockReturnValueOnce(mockBots[1]);
+
+            // Act
+            await bot.run();
+
+            // Assert
+            expect(bot.chance.integer).toHaveBeenCalledWith({ min: 1, max: 2 });
+            expect(bot.chance.pickone).toHaveBeenCalledTimes(2);
+            expect(bot.placeBet).toHaveBeenCalledTimes(2);
+        });
+
+        it("should handle case when chance.pickone returns null/undefined", async () => {
+            // Arrange
+            const mockBots = [{ name: "Bot1" }, { name: "Bot2" }];
+            bot.bots = mockBots;
+            mockGameData.gameConfigs.botenabled = true;
+            (bot.chance.integer as jest.Mock).mockReturnValue(2);
+            (bot.chance.pickone as jest.Mock).mockReturnValueOnce(mockBots[0]).mockReturnValueOnce(null);
+
+            // Act
+            await bot.run();
+
+            // Assert
+            expect(bot.chance.integer).toHaveBeenCalledWith({ min: 1, max: 2 });
+            expect(bot.chance.pickone).toHaveBeenCalledTimes(2);
+            expect(bot.placeBet).toHaveBeenCalledTimes(1);
+            expect(bot.placeBet).toHaveBeenCalledWith(mockBots[0]);
+        });
+
+        it("should handle case when chance.pickone returns undefined", async () => {
+            // Arrange
+            const mockBots = [{ name: "Bot1" }, { name: "Bot2" }];
+            bot.bots = mockBots;
+            mockGameData.gameConfigs.botenabled = true;
+            (bot.chance.integer as jest.Mock).mockReturnValue(2);
+            (bot.chance.pickone as jest.Mock).mockReturnValueOnce(mockBots[0]).mockReturnValueOnce(undefined);
+
+            // Act
+            await bot.run();
+
+            // Assert
+            expect(bot.chance.integer).toHaveBeenCalledWith({ min: 1, max: 2 });
+            expect(bot.chance.pickone).toHaveBeenCalledTimes(2);
+            expect(bot.placeBet).toHaveBeenCalledTimes(1);
+            expect(bot.placeBet).toHaveBeenCalledWith(mockBots[0]);
+        });
+
+        it("should handle placeBet throwing an error gracefully", async () => {
+            // Arrange
+            const mockBots = [{ name: "Bot1" }, { name: "Bot2" }];
+            bot.bots = mockBots;
+            mockGameData.gameConfigs.botenabled = true;
+            (bot.chance.integer as jest.Mock).mockReturnValue(2);
+            (bot.chance.pickone as jest.Mock).mockReturnValueOnce(mockBots[0]).mockReturnValueOnce(mockBots[1]);
+            (bot.placeBet as jest.Mock).mockResolvedValueOnce(undefined).mockRejectedValueOnce(new Error("Place bet failed"));
+
+            // Act & Assert
+            await expect(bot.run()).rejects.toThrow("Place bet failed");
         });
     });
 
@@ -88,7 +249,7 @@ describe("Bot", () => {
             // Assert
             expect(bot.getMinBet).toHaveBeenCalled();
             expect(bot.getMaxBet).toHaveBeenCalledWith(mockBotPlayer, "");
-            expect(helpers.numberHelper.getRandomNumberStep5).toHaveBeenCalledWith(minBet, maxBet, true);
+            expect(helpers.numberHelper.getRandomNumberStep5).toHaveBeenCalledWith(minBet, maxBet, false);
             expect(bot.getMultiplier).toHaveBeenCalledWith();
             expect(mockGameData.playerBetList.length).toBe(1);
             expect(mockGameData.playerBetList).toEqual([
