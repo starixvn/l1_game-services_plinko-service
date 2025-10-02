@@ -57,7 +57,8 @@ describe("ProcessBetQueue", () => {
             ingame: {},
             gameConfigs: { enabled: true, plinkoConfig: { numberOfGameModes: 3 } },
             playerResultBoard: [],
-            playerBetList: [],
+            betList: [],
+            insertBetList: jest.fn(),
         };
 
         mockDefinition = {
@@ -191,15 +192,13 @@ describe("ProcessBetQueue", () => {
                 ...expectedPlacingBetResult,
                 finish: expectedFinish,
             });
-            expect(mockGameData.playerBetList.length).toBe(1);
-            expect(mockGameData.playerBetList).toEqual([
-                {
-                    playerName: mockPlayer.profile.name,
-                    amount: mockPayload.amount,
-                    winAmount: expectedFinish.winAmount,
-                    multiplier: expectedFinish.settlementResult.multiplier,
-                },
-            ]);
+            expect(mockGameData.insertBetList).toHaveBeenCalledWith(
+                mockPlayer.profile.name,
+                mockPayload.amount,
+                expectedFinish.winAmount,
+                expectedFinish.settlementResult.multiplier,
+                expectedRate
+            );
         });
 
         it("should skip stake level update when values are same", async () => {

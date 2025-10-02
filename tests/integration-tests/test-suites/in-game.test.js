@@ -103,6 +103,6 @@ describe("in game", () => {
         const { playerResultBoard } = await client.handleGameEvent((data) => data.playerResultBoard);
 
         // Assert
-        expect(playerResultBoard).toEqual([]);
+        expect(playerResultBoard).toEqual({ players: [] });
     });
 });

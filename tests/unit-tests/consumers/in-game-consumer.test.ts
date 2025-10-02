@@ -50,7 +50,7 @@ describe("InGameConsumer", () => {
                 },
             },
             currencyGroupGames: [{ groupId: "group1", minBet: 10, maxBet: 1000 }],
-            playerResultBoard: [{ playerName: "otherPlayer", amount: 100, winAmount: 100, multiplier: 1 }],
+            playerResultBoard: [{ name: "otherPlayer", amount: 100, winAmount: 100, multiplier: 1 }],
         };
 
         mockDefinition = {
@@ -119,7 +119,7 @@ describe("InGameConsumer", () => {
                 gameConfigs: { ...mockGameData.currencyGroupGames[0], odds: mockGameData.gameConfigs.plinkoConfig.odds },
                 roundHistory: [],
                 user: { balance: 1000, rate: 1.0 },
-                playerResultBoard: mockGameData.playerResultBoard,
+                playerResultBoard: { players: mockGameData.playerResultBoard },
             };
             mockGetUserInfo.mockResolvedValueOnce({ balance: 1000 });
             mockGetListByPlayerId.mockResolvedValueOnce([]);

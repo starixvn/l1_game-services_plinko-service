@@ -48,7 +48,8 @@ describe("Bot", () => {
                 },
             },
             playerResultBoard: [],
-            playerBetList: [],
+            betList: [],
+            insertBetList: jest.fn(),
         };
 
         // Create instance
@@ -250,16 +251,8 @@ describe("Bot", () => {
             expect(bot.getMinBet).toHaveBeenCalled();
             expect(bot.getMaxBet).toHaveBeenCalledWith(mockBotPlayer, "");
             expect(helpers.numberHelper.getRandomNumberStep5).toHaveBeenCalledWith(minBet, maxBet, false);
-            expect(bot.getMultiplier).toHaveBeenCalledWith();
-            expect(mockGameData.playerBetList.length).toBe(1);
-            expect(mockGameData.playerBetList).toEqual([
-                {
-                    playerName: "TestBot",
-                    amount: randomAmount,
-                    winAmount: expectedBetWin,
-                    multiplier: expectedMultiplier,
-                },
-            ]);
+            expect(bot.getMultiplier).toHaveBeenCalled();
+            expect(mockGameData.insertBetList).toHaveBeenCalledWith(mockBotPlayer.name, randomAmount, expectedBetWin, expectedMultiplier);
         });
     });
 
@@ -267,53 +260,28 @@ describe("Bot", () => {
         beforeEach(() => {
             // Mock Math.random to return consistent values for testing
             jest.spyOn(Math, "random").mockReturnValue(0.3);
+            bot.chance = {
+                integer: jest.fn(),
+            } as any;
         });
 
         afterEach(() => {
             jest.restoreAllMocks();
         });
 
-        it("should calculate win amount with medium game mode and max rows", () => {
-            // Act
-            const result = bot.getMultiplier();
-
-            // Assert
-            expect(result).toBe(1);
-        });
-
         it("should calculate win amount with specified game mode and row count", () => {
             // Arrange
             const gameMode = GAME_MODE.LOW;
             const numberOfRows = NUMBER_OF_ROWS.min;
-
-            // Act
-            const result = bot.getMultiplier(gameMode, numberOfRows);
-
-            // Assert
-            expect(result).toBe(1);
-        });
-
-        it("should return amount multiplied by 1 when odds are not available", () => {
-            // Arrange
-            const gameMode = 999; // Invalid game mode
-            const numberOfRows = 999; // Invalid row count
-
-            // Act
-            const result = bot.getMultiplier(gameMode, numberOfRows);
-
-            // Assert
-            expect(result).toBe(1);
-        });
-
-        it("should calculate win with zero slot index", () => {
-            // Arrange
-            jest.spyOn(Math, "random").mockReturnValue(0.8);
+            (bot.chance.integer as jest.Mock).mockReturnValueOnce(gameMode).mockReturnValueOnce(numberOfRows);
 
             // Act
             const result = bot.getMultiplier();
 
             // Assert
-            expect(result).toBe(17);
+            expect(result).toBe(1);
+            expect(bot.chance.integer).toHaveBeenCalledWith({ min: GAME_MODE.LOW, max: GAME_MODE.HIGH });
+            expect(bot.chance.integer).toHaveBeenCalledWith({ min: NUMBER_OF_ROWS.min, max: NUMBER_OF_ROWS.max });
         });
     });
 

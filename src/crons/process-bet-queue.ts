@@ -1,6 +1,6 @@
 import { ProcessBetQueue as BaseProcessBetQueue } from "sc-game-base/src/core/crons";
 import SettleGameRoundConsumer from "../consumers/settle-game-round-consumer";
-import { PlaceBetPayload, SettlementResult } from "../types";
+import { PlaceBetPayload } from "../types";
 import { getChoiceId } from "../helpers/choice-mapper-helper";
 import GameData from "../game-data";
 
@@ -56,19 +56,16 @@ export default class ProcessBetQueue extends BaseProcessBetQueue {
             });
         }
         this.placeBetPublisher.publishToUser(player.UID, { ...placingBetResult, finish });
-        this.insertPlayerBetList(player, finish);
+        this.gameData.insertBetList(
+            player.profile.name,
+            finish?.amount ?? 0,
+            finish?.winAmount ?? 0,
+            finish?.settlementResult?.multiplier ?? 1,
+            rate
+        );
         if (player.profile.minBet !== response?.minBet || player.profile.maxBet !== response?.maxBet) {
             this.updateUserStakeLevel(player, response?.minBet, response?.maxBet);
         }
-    }
-
-    insertPlayerBetList(player: any, finish: { amount: number; winAmount: number; settlementResult: SettlementResult } | null) {
-        this.gameData.playerBetList.push({
-            playerName: player.profile.name,
-            amount: finish?.amount ?? 0,
-            winAmount: finish?.winAmount ?? 0,
-            multiplier: finish?.settlementResult?.multiplier ?? 1,
-        });
     }
 
     generatePlacingBetResult(_: unknown, response: any, payload: PlaceBetPayload, __: unknown) {

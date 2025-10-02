@@ -75,7 +75,7 @@ describe("when place bet", () => {
 
             // Assert
             const { playerBet } = await client.handleGameEvent((data) => data.playerBet);
-            expect(playerBet.playerName).toEqual("N***ser"); // mask name NormalUser
+            expect(playerBet.name).toEqual("N***ser"); // mask name NormalUser
             expect(playerBet.amount).toEqual(100);
             expect(playerBet.winAmount).toBeGreaterThanOrEqual(0);
             expect(playerBet.multiplier).toBeGreaterThanOrEqual(0);

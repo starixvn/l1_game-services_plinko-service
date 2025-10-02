@@ -22,7 +22,7 @@ export default class InGameConsumer extends BaseInGameConsumer {
     async buildPayload(realPlayer: any): Promise<any> {
         const user = await this.getUserInfo(realPlayer);
         const roundHistory = await this.roundQuery.getListByPlayerId(realPlayer.UID, this.definition.numberOfRoundHistory);
-        const { exchangeRates, playerResultBoard } = this.gameData;
+        const { exchangeRates, playerResultBoard: players } = this.gameData;
         const { session } = realPlayer;
         const rate = exchangeRates.code[session.currencyCode] * session.multiplier;
         const gameConfigs = this.getGameConfigs(realPlayer);
@@ -30,7 +30,7 @@ export default class InGameConsumer extends BaseInGameConsumer {
         return {
             gameConfigs,
             roundHistory,
-            playerResultBoard,
+            playerResultBoard: { players },
             user: { ...user, rate },
         };
     }

@@ -33,7 +33,7 @@ export default class GameCron extends Crons.BaseGameCron {
             this.gameData.remainingTime--;
             await this.bot.run();
             this.publishPlayerBet();
-            this.resetPlayerBetList();
+            this.resetBetList();
         }
         if (this.gameData.remainingTime < 0) {
             this.gameData.remainingTime = wholeRound;
@@ -41,13 +41,13 @@ export default class GameCron extends Crons.BaseGameCron {
     }
 
     publishPlayerBet() {
-        if (!this.gameData.playerBetList?.length) {
+        if (!this.gameData.betList?.length) {
             return;
         }
         const chance = new Chance();
-        const { playerName, amount, winAmount, multiplier } = chance.pickone(this.gameData.playerBetList);
+        const { name, amount, winAmount, multiplier } = chance.pickone(this.gameData.betList);
         const playerBet = {
-            playerName: maskName(playerName),
+            name: maskName(name),
             amount,
             winAmount,
             multiplier,
@@ -57,7 +57,7 @@ export default class GameCron extends Crons.BaseGameCron {
         this.publisher.publishToAllUsers({ playerBet });
     }
 
-    resetPlayerBetList() {
-        this.gameData.playerBetList = [];
+    resetBetList() {
+        this.gameData.betList = [];
     }
 }

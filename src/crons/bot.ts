@@ -23,19 +23,12 @@ export default class Bot extends BaseBot {
         const amount = helpers.numberHelper.getRandomNumberStep5(minBet, maxBet, false);
         const multiplier = this.getMultiplier();
         const betWin = amount * multiplier;
-        this.insertPlayerBetList(bot, amount, betWin, multiplier);
+        this.gameData.insertBetList(bot.name, amount, betWin, multiplier);
     }
 
-    insertPlayerBetList(bot: any, amount: number, betWin: number, multiplier: number) {
-        this.gameData.playerBetList.push({
-            playerName: bot.name,
-            amount,
-            winAmount: betWin,
-            multiplier,
-        });
-    }
-
-    getMultiplier(gameMode = GAME_MODE.MEDIUM, numberOfRows = NUMBER_OF_ROWS.max): number {
+    getMultiplier(): number {
+        const gameMode = this.chance.integer({ min: GAME_MODE.LOW, max: GAME_MODE.HIGH });
+        const numberOfRows = this.chance.integer({ min: NUMBER_OF_ROWS.min, max: NUMBER_OF_ROWS.max });
         const slotIndex = Array.from({ length: numberOfRows }, () => (Math.random() < 0.5 ? 0 : 1)).filter((e) => e === 1).length; // NOSONAR
         const { plinkoConfig } = this.gameData.gameConfigs as unknown as GameConfigs;
         return plinkoConfig?.odds?.[gameMode]?.[numberOfRows]?.[slotIndex] ?? 1;
