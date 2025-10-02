@@ -129,6 +129,7 @@ describe("SettleGameRoundConsumer", () => {
             expect(mockGenerateResultByBet).toHaveBeenCalledWith("testPlayer", roundId);
             expect(mockDefinition.settle).toHaveBeenCalledWith(mockResult);
             expect(result).toEqual({
+                roundId,
                 result: mockResult,
                 settlementResult: expectedSettlementResult,
                 winAmount: 250,

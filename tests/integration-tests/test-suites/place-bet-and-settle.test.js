@@ -54,11 +54,14 @@ describe("when place bet", () => {
 
             // Assert
             const { finish } = await client.handleGameEvent((data) => data.finish);
+            expect(finish).toHaveProperty("roundId");
             expect(finish).toHaveProperty("result");
             expect(finish).toHaveProperty("settlementResult");
             expect(finish).toHaveProperty("winAmount");
             expect(finish).toHaveProperty("amount");
             expect(finish).toHaveProperty("reachMaxWin");
+            expect(finish).toHaveProperty("time");
+            expect(finish.roundId).toBeGreaterThanOrEqual(1);
             expect(finish.result.length).toEqual(payload.numberOfRows);
             expect(finish.result.every((path) => path === 0 || path === 1)).toBeTruthy();
             expect(finish.settlementResult.slotIndex).toBeGreaterThanOrEqual(0);
@@ -76,7 +79,7 @@ describe("when place bet", () => {
             // Assert
             const { playerBet } = await client.handleGameEvent((data) => data.playerBet);
             expect(playerBet.name).toEqual("N***ser"); // mask name NormalUser
-            expect(playerBet.amount).toEqual(100);
+            expect(playerBet.betAmount).toEqual(100);
             expect(playerBet.winAmount).toBeGreaterThanOrEqual(0);
             expect(playerBet.multiplier).toBeGreaterThanOrEqual(0);
         });
