@@ -45,10 +45,10 @@ export default class GameCron extends Crons.BaseGameCron {
             return;
         }
         const chance = new Chance();
-        const { name, amount, winAmount, multiplier } = chance.pickone(this.gameData.betList);
+        const { name, betAmount, winAmount, multiplier } = chance.pickone(this.gameData.betList);
         const playerBet = {
             name: maskName(name),
-            amount,
+            betAmount,
             winAmount,
             multiplier,
         };

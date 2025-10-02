@@ -216,8 +216,8 @@ describe("GameCron", () => {
 
         it("should publish player bet if bet list is not empty", () => {
             // Arrange
-            mockGameData.betList = [{ name: "testPlayer", amount: 100, winAmount: 100, multiplier: 1 }];
-            mockPickone.mockReturnValue({ name: "testPlayer", amount: 100, winAmount: 100, multiplier: 1 });
+            mockGameData.betList = [{ name: "testPlayer", betAmount: 100, winAmount: 100, multiplier: 1 }];
+            mockPickone.mockReturnValue({ name: "testPlayer", betAmount: 100, winAmount: 100, multiplier: 1 });
             (maskName as jest.Mock).mockReturnValue("t***yer");
 
             // Act
@@ -225,39 +225,39 @@ describe("GameCron", () => {
 
             // Assert
             expect(mockPublisher.publishToAllUsers).toHaveBeenCalledWith({
-                playerBet: { name: "t***yer", amount: 100, winAmount: 100, multiplier: 1 },
+                playerBet: { name: "t***yer", betAmount: 100, winAmount: 100, multiplier: 1 },
             });
         });
 
         it("should insert player bet into player result board if player result board is not empty", () => {
             // Arrange
-            mockGameData.betList = [{ name: "testPlayer", amount: 100, winAmount: 100, multiplier: 1 }];
-            mockPickone.mockReturnValue({ name: "testPlayer", amount: 100, winAmount: 100, multiplier: 1 });
+            mockGameData.betList = [{ name: "testPlayer", betAmount: 100, winAmount: 100, multiplier: 1 }];
+            mockPickone.mockReturnValue({ name: "testPlayer", betAmount: 100, winAmount: 100, multiplier: 1 });
             (maskName as jest.Mock).mockReturnValue("t***yer");
 
             // Act
             gameCron.publishPlayerBet();
 
             // Assert
-            expect(mockGameData.playerResultBoard).toEqual([{ name: "t***yer", amount: 100, winAmount: 100, multiplier: 1 }]);
+            expect(mockGameData.playerResultBoard).toEqual([{ name: "t***yer", betAmount: 100, winAmount: 100, multiplier: 1 }]);
         });
 
         it("should remove the last player bet from player result board if player result board length >= 10", () => {
             // Arrange
             mockGameData.playerResultBoard = [
-                { name: "t***er1", amount: 100, winAmount: 100, multiplier: 1 },
-                { name: "t***er2", amount: 100, winAmount: 100, multiplier: 1 },
-                { name: "t***er3", amount: 100, winAmount: 100, multiplier: 1 },
-                { name: "t***er4", amount: 100, winAmount: 100, multiplier: 1 },
-                { name: "t***er5", amount: 100, winAmount: 100, multiplier: 1 },
-                { name: "t***er6", amount: 100, winAmount: 100, multiplier: 1 },
-                { name: "t***er7", amount: 100, winAmount: 100, multiplier: 1 },
-                { name: "t***er8", amount: 100, winAmount: 100, multiplier: 1 },
-                { name: "t***er9", amount: 100, winAmount: 100, multiplier: 1 },
-                { name: "t***r10", amount: 100, winAmount: 100, multiplier: 1 },
+                { name: "t***er1", betAmount: 100, winAmount: 100, multiplier: 1 },
+                { name: "t***er2", betAmount: 100, winAmount: 100, multiplier: 1 },
+                { name: "t***er3", betAmount: 100, winAmount: 100, multiplier: 1 },
+                { name: "t***er4", betAmount: 100, winAmount: 100, multiplier: 1 },
+                { name: "t***er5", betAmount: 100, winAmount: 100, multiplier: 1 },
+                { name: "t***er6", betAmount: 100, winAmount: 100, multiplier: 1 },
+                { name: "t***er7", betAmount: 100, winAmount: 100, multiplier: 1 },
+                { name: "t***er8", betAmount: 100, winAmount: 100, multiplier: 1 },
+                { name: "t***er9", betAmount: 100, winAmount: 100, multiplier: 1 },
+                { name: "t***r10", betAmount: 100, winAmount: 100, multiplier: 1 },
             ];
-            mockGameData.betList = [{ name: "testPlayer", amount: 100, winAmount: 100, multiplier: 1 }];
-            mockPickone.mockReturnValue({ name: "testPlayer", amount: 100, winAmount: 100, multiplier: 1 });
+            mockGameData.betList = [{ name: "testPlayer", betAmount: 100, winAmount: 100, multiplier: 1 }];
+            mockPickone.mockReturnValue({ name: "testPlayer", betAmount: 100, winAmount: 100, multiplier: 1 });
             (maskName as jest.Mock).mockReturnValue("t***yer");
 
             // Act
@@ -265,8 +265,8 @@ describe("GameCron", () => {
 
             // Assert
             expect(mockGameData.playerResultBoard.length).toEqual(10);
-            expect(mockGameData.playerResultBoard[0]).toEqual({ name: "t***yer", amount: 100, winAmount: 100, multiplier: 1 });
-            expect(mockGameData.playerResultBoard[9]).toEqual({ name: "t***er9", amount: 100, winAmount: 100, multiplier: 1 });
+            expect(mockGameData.playerResultBoard[0]).toEqual({ name: "t***yer", betAmount: 100, winAmount: 100, multiplier: 1 });
+            expect(mockGameData.playerResultBoard[9]).toEqual({ name: "t***er9", betAmount: 100, winAmount: 100, multiplier: 1 });
         });
     });
 });
