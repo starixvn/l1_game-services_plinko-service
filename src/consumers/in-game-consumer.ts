@@ -2,6 +2,7 @@ import { InGameConsumer as BaseInGameConsumer } from "sc-game-base/src/core/even
 import RoundQuery from "../query-apis/round-query";
 import { GameConfigs } from "../types";
 import GameData from "../game-data";
+import { generateServerSeedAndHash } from "../helpers/pf-helper";
 
 export default class InGameConsumer extends BaseInGameConsumer {
     declare gameData: GameData;
@@ -22,15 +23,18 @@ export default class InGameConsumer extends BaseInGameConsumer {
     async buildPayload(realPlayer: any): Promise<any> {
         const user = await this.getUserInfo(realPlayer);
         const roundHistory = await this.roundQuery.getListByPlayerId(realPlayer.UID, this.definition.numberOfRoundHistory);
-        const { exchangeRates, playerResultBoard: players } = this.gameData;
+        const { exchangeRates, playerResultBoard: players, gameConfigs: configs } = this.gameData;
         const { session } = realPlayer;
         const rate = exchangeRates.code[session.currencyCode] * session.multiplier;
         const gameConfigs = this.getGameConfigs(realPlayer);
+        const { serverSeedHash, serverSeed } = generateServerSeedAndHash(configs?.randomMode);
+        this.gameData.playerPf[realPlayer.profile.name] = { serverSeedHash, serverSeed };
 
         return {
             gameConfigs,
             roundHistory,
             playerResultBoard: { players },
+            pf: { serverSeedHash },
             user: { ...user, rate },
         };
     }

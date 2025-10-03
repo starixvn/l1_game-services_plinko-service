@@ -1,5 +1,6 @@
 import InGameConsumer from "../../../src/consumers/in-game-consumer";
 import RoundQuery from "../../../src/query-apis/round-query";
+import { generateServerSeedAndHash } from "../../../src/helpers/pf-helper";
 
 // Mock the base class
 const mockGetUserInfo = jest.fn();
@@ -24,6 +25,13 @@ jest.mock("../../../src/query-apis/round-query", () => {
     };
 });
 
+// Mock PF-Helper
+jest.mock("../../../src/helpers/pf-helper", () => {
+    return {
+        generateServerSeedAndHash: jest.fn(),
+    };
+});
+
 describe("InGameConsumer", () => {
     let inGameConsumer: InGameConsumer;
     let mockRoundQuery: any;
@@ -42,6 +50,7 @@ describe("InGameConsumer", () => {
                 plinkoConfig: {
                     odds: { 0: { 8: [1, 2, 3, 4, 5, 6, 7, 8, 9] } },
                 },
+                randomMode: 1,
             },
             umMessages: "Game disabled",
             exchangeRates: {
@@ -51,6 +60,7 @@ describe("InGameConsumer", () => {
             },
             currencyGroupGames: [{ groupId: "group1", minBet: 10, maxBet: 1000 }],
             playerResultBoard: [{ name: "otherPlayer", amount: 100, winAmount: 100, multiplier: 1 }],
+            playerPf: {},
         };
 
         mockDefinition = {
@@ -69,6 +79,9 @@ describe("InGameConsumer", () => {
                 multiplier: 1.0,
                 currencyGroupId: "group1",
             },
+            profile: {
+                name: "player123",
+            },
 
             socketClient: mockSocketClient,
         };
@@ -82,6 +95,7 @@ describe("InGameConsumer", () => {
         inGameConsumer.roundQuery = mockRoundQuery;
         inGameConsumer.gameData = mockGameData;
         inGameConsumer.definition = mockDefinition;
+        (generateServerSeedAndHash as jest.Mock).mockReturnValue({ serverSeedHash: "serverSeedHash", serverSeed: "serverSeed" });
     });
 
     describe("consume", () => {
@@ -120,6 +134,7 @@ describe("InGameConsumer", () => {
                 roundHistory: [],
                 user: { balance: 1000, rate: 1.0 },
                 playerResultBoard: { players: mockGameData.playerResultBoard },
+                pf: { serverSeedHash: "serverSeedHash" },
             };
             mockGetUserInfo.mockResolvedValueOnce({ balance: 1000 });
             mockGetListByPlayerId.mockResolvedValueOnce([]);
@@ -134,6 +149,10 @@ describe("InGameConsumer", () => {
             });
             expect(mockSocketClient.emit).toHaveBeenCalledWith("plinko", expectedPayload);
             expect(mockTrackUserSignIn).toHaveBeenCalledWith(mockRealPlayer, expectedPayload.user);
+            expect(mockGameData.playerPf[mockRealPlayer.profile.name]).toEqual({
+                serverSeedHash: "serverSeedHash",
+                serverSeed: "serverSeed",
+            });
         });
     });
 });

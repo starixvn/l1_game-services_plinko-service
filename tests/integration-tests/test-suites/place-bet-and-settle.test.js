@@ -83,6 +83,17 @@ describe("when place bet", () => {
             expect(playerBet.winAmount).toBeGreaterThanOrEqual(0);
             expect(playerBet.multiplier).toBeGreaterThanOrEqual(0);
         });
+
+        it("should receive pf after finish", async () => {
+            // Act
+            client.emit(eventTypes.bet, payload);
+            await client.handleGameEvent((data) => data.finish);
+
+            // Assert
+            const { pf } = await client.handleGameEvent((data) => data.pf);
+            expect(pf.serverSeedHash).toBeDefined();
+            expect(typeof pf.serverSeedHash).toBe("string");
+        });
     });
 
     describe("when place bet with invalid data", () => {

@@ -2,6 +2,7 @@ import { SettleGameRoundConsumer } from "../../../src/consumers";
 import ProcessBetQueue from "../../../src/crons/process-bet-queue";
 import { PlaceBetPayload } from "../../../src/types";
 import { getChoiceId } from "../../../src/helpers/choice-mapper-helper";
+import { generateServerSeedAndHash } from "../../../src/helpers/pf-helper";
 
 // Mock the base class
 const mockProceedBet = jest.fn();
@@ -40,6 +41,11 @@ jest.mock("../../../src/helpers/choice-mapper-helper", () => ({
     getChoiceId: jest.fn(),
 }));
 
+// Mock PF-Helper
+jest.mock("../../../src/helpers/pf-helper", () => ({
+    generateServerSeedAndHash: jest.fn().mockReturnValue({ serverSeedHash: "serverSeedHash", serverSeed: "serverSeed" }),
+}));
+
 describe("ProcessBetQueue", () => {
     let processBetQueue: ProcessBetQueue;
     let mockSettleGameRoundConsumer: any;
@@ -59,6 +65,7 @@ describe("ProcessBetQueue", () => {
             playerResultBoard: [],
             betList: [],
             insertBetList: jest.fn(),
+            playerPf: {},
         };
 
         mockDefinition = {
@@ -180,6 +187,7 @@ describe("ProcessBetQueue", () => {
             mockSettle.mockResolvedValue(expectedFinish);
             mockPlayer.profile.minBet = 10; // Different from response
             mockPlayer.profile.maxBet = 1000; // Different from response
+            (generateServerSeedAndHash as jest.Mock).mockReturnValue({ serverSeedHash: "serverSeedHash", serverSeed: "serverSeed" });
 
             // Act
             await processBetQueue.handleSuccessBet(mockPlayer, response, roundId, mockPayload, null);
@@ -199,6 +207,10 @@ describe("ProcessBetQueue", () => {
                 expectedFinish.settlementResult.multiplier,
                 expectedRate
             );
+            expect(mockGameData.playerPf).toEqual({
+                [mockPlayer.profile.name]: { serverSeedHash: "serverSeedHash", serverSeed: "serverSeed" },
+            });
+            expect(mockPlaceBetPublisher.publishToUser).toHaveBeenCalledWith(mockPlayer.UID, { pf: { serverSeedHash: "serverSeedHash" } });
         });
 
         it("should skip stake level update when values are same", async () => {

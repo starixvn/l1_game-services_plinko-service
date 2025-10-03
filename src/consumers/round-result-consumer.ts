@@ -1,5 +1,7 @@
 import { RoundResultConsumer as BaseRoundResultConsumer } from "sc-game-base/src/core/event-consumers";
 import { SeedHelper } from "sc-game-base/src/core/helpers";
+import GameData from "../game-data";
+import { generateServerSeedAndHash } from "../helpers/pf-helper";
 
 type ResultData = {
     serverSeedHash: string;
@@ -11,6 +13,8 @@ type ResultData = {
 };
 
 export default class RoundResultConsumer extends BaseRoundResultConsumer {
+    declare gameData: GameData;
+
     getResultFromAdmin(playerName: string) {
         const resultFromAdmin = this.gameData.settlementResultFromAdmin?.result;
         if (resultFromAdmin?.playerName === playerName) {
@@ -33,14 +37,14 @@ export default class RoundResultConsumer extends BaseRoundResultConsumer {
     generateResultData(playerName: string): ResultData {
         const { clientSeed } = this.gameData.ingame[playerName];
         const clientSeeds = [{ name: playerName, clientSeed }];
-        const serverSeed = this.generateServerSeed();
-        const serverSeedHash = SeedHelper.getSHA256Hash(serverSeed);
+        const { serverSeedHash, serverSeed } =
+            this.gameData.playerPf[playerName] || generateServerSeedAndHash(this.gameData.gameConfigs.randomMode);
         const mergeClientSeed = SeedHelper.getMergeClientSeed(clientSeeds);
         const mergeSeed = serverSeed + mergeClientSeed;
         const finalHash = SeedHelper.getSHA512Hash(mergeSeed);
         return {
-            serverSeedHash,
-            serverSeed,
+            serverSeedHash: serverSeedHash || "",
+            serverSeed: serverSeed || "",
             clientSeeds,
             mergeClientSeed,
             mergeSeed,

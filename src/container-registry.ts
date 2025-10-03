@@ -1,7 +1,7 @@
 import { asClass, asValue } from "awilix";
 import { Table, Core } from "sc-game-base";
 
-import { PlaceBetConsumer, SettleGameRoundConsumer, RoundResultConsumer, InGameConsumer } from "./consumers";
+import { PlaceBetConsumer, SettleGameRoundConsumer, RoundResultConsumer, InGameConsumer, UserDisconnectConsumer } from "./consumers";
 import { Bot, GameCron, ProcessBetQueue } from "./crons";
 import { Results, Rounds } from "./models";
 import RoundQuery from "./query-apis/round-query";
@@ -17,6 +17,7 @@ export default class ContainerRegistry extends Core.ContainerRegistry {
             roundResultConsumer: asClass(RoundResultConsumer).singleton(),
             settleGameRoundConsumer: asClass(SettleGameRoundConsumer).singleton().proxy(),
             userSignInConsumer: asClass(Table.EventConsumers.TableUserSignInConsumer).singleton().proxy(),
+            userDisconnectConsumer: asClass(UserDisconnectConsumer).singleton(),
         });
     }
 

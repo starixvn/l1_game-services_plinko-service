@@ -105,4 +105,16 @@ describe("in game", () => {
         // Assert
         expect(playerResultBoard).toEqual({ players: [] });
     });
+
+    it("should receive pf", async () => {
+        // Arrange
+        client.sendInGameEvent();
+
+        // Act
+        const { pf } = await client.handleGameEvent((data) => data.pf);
+
+        // Assert
+        expect(pf.serverSeedHash).toBeDefined();
+        expect(typeof pf.serverSeedHash).toBe("string");
+    });
 });

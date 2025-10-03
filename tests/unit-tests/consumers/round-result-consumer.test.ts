@@ -1,11 +1,10 @@
 import RoundResultConsumer from "../../../src/consumers/round-result-consumer";
+import { SeedHelper } from "sc-game-base/src/core/helpers";
+import { generateServerSeedAndHash } from "../../../src/helpers/pf-helper";
 
 // Mock the base class
-const mockGenerateServerSeed = jest.fn();
-
 jest.mock("sc-game-base/src/core/event-consumers", () => ({
     RoundResultConsumer: class {
-        generateServerSeed = mockGenerateServerSeed;
         constructor() {
             return this;
         }
@@ -18,11 +17,17 @@ jest.spyOn(global, "Date").mockImplementation(() => mockDate);
 // Mock SeedHelper
 jest.mock("sc-game-base/src/core/helpers", () => ({
     SeedHelper: {
-        getSHA256Hash: jest.fn(),
         getSHA512Hash: jest.fn(),
         getMergeClientSeed: jest.fn(),
     },
 }));
+
+// Mock PF-Helper
+jest.mock("../../../src/helpers/pf-helper", () => {
+    return {
+        generateServerSeedAndHash: jest.fn().mockReturnValue({ serverSeedHash: "serverSeedHash", serverSeed: "serverSeed" }),
+    };
+});
 
 describe("RoundResultConsumer", () => {
     let roundResultConsumer: RoundResultConsumer;
@@ -36,6 +41,10 @@ describe("RoundResultConsumer", () => {
         // Setup mocks
         mockGameData = {
             settlementResultFromAdmin: {},
+            playerPf: {},
+            gameConfigs: {
+                randomMode: 1,
+            },
         };
 
         mockResultsRepository = {
@@ -106,11 +115,8 @@ describe("RoundResultConsumer", () => {
 
     describe("generateResultByBet", () => {
         beforeEach(() => {
-            mockGenerateServerSeed.mockReturnValue("serverSeed");
-            const mockSeedHelper = require("sc-game-base/src/core/helpers").SeedHelper;
-            mockSeedHelper.getSHA256Hash.mockReturnValue("serverSeedHash");
-            mockSeedHelper.getSHA512Hash.mockReturnValue("finalHash");
-            mockSeedHelper.getMergeClientSeed.mockReturnValue("mergedSeed");
+            (SeedHelper.getSHA512Hash as jest.Mock).mockReturnValue("finalHash");
+            (SeedHelper.getMergeClientSeed as jest.Mock).mockReturnValue("mergedSeed");
             mockDefinition.generateResult.mockReturnValue([1, 0, 1, 0]);
         });
 
@@ -167,20 +173,40 @@ describe("RoundResultConsumer", () => {
 
     describe("generateResultData", () => {
         beforeEach(() => {
-            mockGenerateServerSeed.mockReturnValue("serverSeed");
-            const mockSeedHelper = require("sc-game-base/src/core/helpers").SeedHelper;
-            mockSeedHelper.getSHA256Hash.mockReturnValue("serverSeedHash");
-            mockSeedHelper.getSHA512Hash.mockReturnValue("finalHash");
-            mockSeedHelper.getMergeClientSeed.mockReturnValue("mergedSeed");
+            (SeedHelper.getSHA512Hash as jest.Mock).mockReturnValue("finalHash");
+            (SeedHelper.getMergeClientSeed as jest.Mock).mockReturnValue("mergedSeed");
         });
 
         it("should generate complete result data structure", () => {
             // Arrange
             const playerName = "testPlayer";
-            mockGameData.ingame = {
+            mockGameData.ingame = { [playerName]: { clientSeed: "1234" } };
+            mockGameData.playerPf = {
                 [playerName]: {
-                    clientSeed: "1234",
+                    serverSeedHash: "playerServerSeedHash",
+                    serverSeed: "playerServerSeed",
                 },
+            };
+
+            // Act
+            const result = roundResultConsumer.generateResultData(playerName);
+
+            // Assert
+            expect(result).toEqual({
+                serverSeedHash: "playerServerSeedHash",
+                serverSeed: "playerServerSeed",
+                clientSeeds: [{ name: playerName, clientSeed: "1234" }],
+                mergeClientSeed: "mergedSeed",
+                mergeSeed: "playerServerSeedmergedSeed",
+                finalHash: "finalHash",
+            });
+        });
+
+        it("should generate result data with default server seed when player pf is not set", () => {
+            // Arrange
+            const playerName = "testPlayer";
+            mockGameData.ingame = {
+                [playerName]: { clientSeed: "1234" },
             };
 
             // Act
@@ -193,6 +219,28 @@ describe("RoundResultConsumer", () => {
                 clientSeeds: [{ name: playerName, clientSeed: "1234" }],
                 mergeClientSeed: "mergedSeed",
                 mergeSeed: "serverSeedmergedSeed",
+                finalHash: "finalHash",
+            });
+        });
+
+        it("should generate result data with empty server seed when player pf is empty", () => {
+            // Arrange
+            const playerName = "testPlayer";
+            mockGameData.ingame = {
+                [playerName]: { clientSeed: "1234" },
+            };
+            mockGameData.playerPf = { [playerName]: {} };
+
+            // Act
+            const result = roundResultConsumer.generateResultData(playerName);
+
+            // Assert
+            expect(result).toEqual({
+                serverSeedHash: "",
+                serverSeed: "",
+                clientSeeds: [{ name: playerName, clientSeed: "1234" }],
+                mergeClientSeed: "mergedSeed",
+                mergeSeed: "undefinedmergedSeed",
                 finalHash: "finalHash",
             });
         });

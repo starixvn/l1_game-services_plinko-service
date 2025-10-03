@@ -3,6 +3,7 @@ import SettleGameRoundConsumer from "../consumers/settle-game-round-consumer";
 import { PlaceBetPayload } from "../types";
 import { getChoiceId } from "../helpers/choice-mapper-helper";
 import GameData from "../game-data";
+import { generateServerSeedAndHash } from "../helpers/pf-helper";
 
 export default class ProcessBetQueue extends BaseProcessBetQueue {
     declare settleGameRoundConsumer: SettleGameRoundConsumer;
@@ -63,9 +64,16 @@ export default class ProcessBetQueue extends BaseProcessBetQueue {
             finish?.settlementResult?.multiplier ?? 1,
             rate
         );
+        this.publishNewPfToPlayer(player);
         if (player.profile.minBet !== response?.minBet || player.profile.maxBet !== response?.maxBet) {
             this.updateUserStakeLevel(player, response?.minBet, response?.maxBet);
         }
+    }
+
+    publishNewPfToPlayer(player: any) {
+        const { serverSeedHash, serverSeed } = generateServerSeedAndHash(this.gameData.gameConfigs.randomMode);
+        this.gameData.playerPf[player.profile.name] = { serverSeedHash, serverSeed };
+        this.placeBetPublisher.publishToUser(player.UID, { pf: { serverSeedHash } });
     }
 
     generatePlacingBetResult(_: unknown, response: any, payload: PlaceBetPayload, __: unknown) {
