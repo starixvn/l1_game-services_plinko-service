@@ -93,6 +93,8 @@ describe("in game", () => {
         expect(roundHistory[0].roundId).toBe(1);
         expect(roundHistory[0].result).toEqual([1, 1, 0, 1, 1, 0, 0, 0]);
         expect(roundHistory[0].settlementResult).toEqual({ slotIndex: 4, multiplier: 5 });
+        expect(roundHistory[0].gameMode).toBe(0);
+        expect(roundHistory[0].numberOfRows).toBe(8);
     });
 
     it("should receive player result board", async () => {

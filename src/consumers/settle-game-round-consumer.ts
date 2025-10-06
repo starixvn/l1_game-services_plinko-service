@@ -33,6 +33,8 @@ export default class SettleGameRoundConsumer extends BaseSettleGameRoundConsumer
                 amount: +newRound.amount,
                 reachMaxWin: newRound.reachMaxWin,
                 time: newRound.time,
+                gameMode,
+                numberOfRows,
             };
         }
         return null;

@@ -12,6 +12,8 @@ export default class RoundQuery extends BaseRoundQuery {
             roundId: round.id,
             result: round.result,
             settlementResult: round.settlementResult,
+            gameMode: round.gameMode,
+            numberOfRows: round.numberOfRows,
         }));
     }
 

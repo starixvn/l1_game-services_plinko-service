@@ -181,6 +181,8 @@ describe("ProcessBetQueue", () => {
                 winAmount: 200,
                 amount: 100,
                 reachMaxWin: false,
+                gameMode: 1,
+                numberOfRows: 12,
             };
 
             mockCalculateCurrencyRate.mockReturnValue(expectedRate);

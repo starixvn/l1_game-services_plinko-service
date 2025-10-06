@@ -96,11 +96,15 @@ describe("RoundQuery", () => {
                     roundId: 1001,
                     result: [1, 0, 1, 0, 1, 1, 0, 0],
                     settlementResult: { slotIndex: 2, multiplier: 2.5 },
+                    gameMode: 1,
+                    numberOfRows: 8,
                 },
                 {
                     roundId: 1002,
                     result: [0, 1, 0, 1, 0, 1, 1, 0],
                     settlementResult: { slotIndex: 5, multiplier: 1.0 },
+                    gameMode: 1,
+                    numberOfRows: 8,
                 },
             ]);
         });

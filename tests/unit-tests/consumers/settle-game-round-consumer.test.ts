@@ -136,6 +136,8 @@ describe("SettleGameRoundConsumer", () => {
                 amount: 100,
                 reachMaxWin: false,
                 time: mockDate,
+                gameMode: 1,
+                numberOfRows: 12,
             });
         });
 

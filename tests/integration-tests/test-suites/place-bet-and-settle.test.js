@@ -61,6 +61,8 @@ describe("when place bet", () => {
             expect(finish).toHaveProperty("amount");
             expect(finish).toHaveProperty("reachMaxWin");
             expect(finish).toHaveProperty("time");
+            expect(finish).toHaveProperty("gameMode");
+            expect(finish).toHaveProperty("numberOfRows");
             expect(finish.roundId).toBeGreaterThanOrEqual(1);
             expect(finish.result.length).toEqual(payload.numberOfRows);
             expect(finish.result.every((path) => path === 0 || path === 1)).toBeTruthy();
@@ -70,6 +72,8 @@ describe("when place bet", () => {
             expect(finish.winAmount).toBeGreaterThanOrEqual(0);
             expect(finish.amount).toBeGreaterThanOrEqual(0);
             expect(typeof finish.reachMaxWin).toBe("boolean");
+            expect(finish.gameMode).toEqual(payload.gameMode);
+            expect(finish.numberOfRows).toEqual(payload.numberOfRows);
         });
 
         it("should receive playerBet", async () => {
