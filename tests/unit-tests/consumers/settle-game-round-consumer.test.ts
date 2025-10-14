@@ -138,6 +138,7 @@ describe("SettleGameRoundConsumer", () => {
                 time: mockDate,
                 gameMode: 1,
                 numberOfRows: 12,
+                odds: mockGameData.gameConfigs.plinkoConfig.odds,
             });
         });
 

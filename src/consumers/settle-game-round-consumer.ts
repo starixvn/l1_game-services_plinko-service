@@ -35,6 +35,7 @@ export default class SettleGameRoundConsumer extends BaseSettleGameRoundConsumer
                 time: newRound.time,
                 gameMode,
                 numberOfRows,
+                odds: plinkoConfig.odds,
             };
         }
         return null;

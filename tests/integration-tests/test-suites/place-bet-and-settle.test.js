@@ -3,6 +3,7 @@ import { GameClientDriver, eventTypes, normalUser } from "sc-game-service-integr
 import appConfigs from "../../../build/app-configs.IGT";
 import { socketOptionsFunc } from "../_stubs/test-data";
 import { initUserSession } from "../helper/helper";
+import { gameConfig } from "../_stubs/test-data";
 
 const socketOptions = socketOptionsFunc(appConfigs.hostingPort);
 
@@ -63,6 +64,7 @@ describe("when place bet", () => {
             expect(finish).toHaveProperty("time");
             expect(finish).toHaveProperty("gameMode");
             expect(finish).toHaveProperty("numberOfRows");
+            expect(finish).toHaveProperty("odds");
             expect(finish.roundId).toBeGreaterThanOrEqual(1);
             expect(finish.result.length).toEqual(payload.numberOfRows);
             expect(finish.result.every((path) => path === 0 || path === 1)).toBeTruthy();
@@ -74,6 +76,7 @@ describe("when place bet", () => {
             expect(typeof finish.reachMaxWin).toBe("boolean");
             expect(finish.gameMode).toEqual(payload.gameMode);
             expect(finish.numberOfRows).toEqual(payload.numberOfRows);
+            expect(finish.odds).toEqual(gameConfig.plinkoConfig.odds);
         });
 
         it("should receive playerBet", async () => {
