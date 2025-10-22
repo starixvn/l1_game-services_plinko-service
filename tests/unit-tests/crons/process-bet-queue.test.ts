@@ -51,6 +51,7 @@ describe("ProcessBetQueue", () => {
     let mockSettleGameRoundConsumer: any;
     let mockGameData: any;
     let mockDefinition: any;
+    let mockTrialModeConsumer: any;
     let mockPlayer: any;
     let mockPayload: PlaceBetPayload;
 
@@ -74,6 +75,10 @@ describe("ProcessBetQueue", () => {
             durations: {
                 wholeRound: 30,
             },
+        };
+
+        mockTrialModeConsumer = {
+            consume: jest.fn(),
         };
 
         mockPlayer = {
@@ -101,7 +106,10 @@ describe("ProcessBetQueue", () => {
 
         // Create instance
         // @ts-ignore
-        processBetQueue = new ProcessBetQueue({ settleGameRoundConsumer: mockSettleGameRoundConsumer });
+        processBetQueue = new ProcessBetQueue({
+            settleGameRoundConsumer: mockSettleGameRoundConsumer,
+            trialModeConsumer: mockTrialModeConsumer,
+        });
         processBetQueue.gameData = mockGameData;
         processBetQueue.definition = mockDefinition;
     });
@@ -121,6 +129,18 @@ describe("ProcessBetQueue", () => {
             // Assert
             expect(mockGameData.roundId).toBe(initialRoundId + 1);
             expect(mockProceedBet).toHaveBeenCalledWith(mockPlayer, mockPayload);
+            expect(mockGameData.ingame[mockPlayer.profile.name]).toBeUndefined();
+        });
+        it("should call trial mode consumer when amount is 0", async () => {
+            // Arrange
+            mockPayload.amount = 0;
+
+            // Act
+            await processBetQueue.proceedBet(mockPlayer, mockPayload);
+
+            // Assert
+            expect(mockTrialModeConsumer.consume).toHaveBeenCalledWith(mockPlayer);
+            expect(mockProceedBet).not.toHaveBeenCalled();
             expect(mockGameData.ingame[mockPlayer.profile.name]).toBeUndefined();
         });
     });

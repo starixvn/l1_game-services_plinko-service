@@ -130,6 +130,18 @@ describe("PlaceBetConsumer", () => {
             expect(result[3].failure).toBe(true);
             expect(result[3].notice).toEqual({ key: "max_bet", params: { maxBet: 1000 } });
         });
+
+        it("should not return any failure = true when amount is 0", () => {
+            // Arrange
+            mockAmount = 0;
+
+            // Act
+            const result = placeBetConsumer.composeValidationCriteria(mockPlayer, mockBetChoice, mockAmount, mockFreeBet, mockRate);
+
+            // Assert
+            expect(result).toHaveLength(4);
+            expect(result.map((x) => x.failure)).toEqual([false, false, false, false]);
+        });
     });
 
     describe("validateBetRequestParams", () => {
@@ -147,20 +159,6 @@ describe("PlaceBetConsumer", () => {
             // Assert
             expect(result).toHaveLength(1);
             expect(result[0].failure).toBe(false);
-        });
-
-        it("should return failure for missing amount", () => {
-            // Arrange
-            const payload: any = {
-                numberOfRows: 12,
-                gameMode: GAME_MODE.MEDIUM,
-            };
-
-            // Act
-            const result = placeBetConsumer.validateBetRequestParams(payload);
-
-            // Assert
-            expect(result[0].failure).toBe(true);
         });
 
         it("should return failure for invalid number of rows", () => {
@@ -296,6 +294,39 @@ describe("PlaceBetConsumer", () => {
             expect(mockValidateRequestParams).toHaveBeenCalledWith(payload, mockPlayer);
             expect(mockValidateBetRequest).toHaveBeenCalledWith(mockPlayer, "", 100, false, 0);
             expect(mockGameData.ingame[mockPlayer.profile.name]).toBeUndefined();
+        });
+
+        it("should process trial mode when amount is 0", () => {
+            // Arrange
+            const payload: any = {
+                numberOfRows: 12,
+                gameMode: GAME_MODE.MEDIUM,
+                clientSeed: "test-seed",
+            };
+
+            // Act
+            placeBetConsumer.consume(mockPlayer, payload);
+
+            // Assert
+            expect(mockValidateRequestParams).toHaveBeenCalledWith(payload, mockPlayer);
+            expect(mockValidateBetRequest).toHaveBeenCalledWith(mockPlayer, "", 0, false, 0);
+            expect(payload.receivedTime).toBeInstanceOf(Date);
+            expect(payload.mode).toBe("landscape");
+            expect(payload.freeBet).toBe(false);
+            expect(mockGameData.ingame[mockPlayer.profile.name]).toEqual({
+                name: mockPlayer.profile.name,
+                currency: mockPlayer.session.currencyName,
+                system: mockPlayer.session.system,
+                betTracks: {},
+                betProcessing: false,
+                betQueue: [{ player: mockPlayer, payload }],
+                operatorId: mockPlayer.session.operatorId,
+                numberOfRows: 12,
+                gameMode: GAME_MODE.MEDIUM,
+                amount: 0,
+                clientSeed: "test-seed",
+                hasBet: true,
+            });
         });
     });
 });

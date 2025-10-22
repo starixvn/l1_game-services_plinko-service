@@ -1,5 +1,5 @@
 import { ProcessBetQueue as BaseProcessBetQueue } from "sc-game-base/src/core/crons";
-import SettleGameRoundConsumer from "../consumers/settle-game-round-consumer";
+import { SettleGameRoundConsumer, TrialModeConsumer } from "../consumers";
 import { PlaceBetPayload } from "../types";
 import { getChoiceId } from "../helpers/choice-mapper-helper";
 import GameData from "../game-data";
@@ -7,17 +7,23 @@ import { generateServerSeedAndHash } from "../helpers/pf-helper";
 
 export default class ProcessBetQueue extends BaseProcessBetQueue {
     declare settleGameRoundConsumer: SettleGameRoundConsumer;
+    declare trialModeConsumer: TrialModeConsumer;
     declare gameData: GameData;
     declare executeInterceptorEvent: (event: string, interceptors: any, context: any) => Promise<void>;
 
     constructor(props: any) {
         super(props);
         this.settleGameRoundConsumer = props.settleGameRoundConsumer;
+        this.trialModeConsumer = props.trialModeConsumer;
     }
 
-    async proceedBet(player: any, payload: any) {
-        this.gameData.roundId++;
-        await super.proceedBet(player, payload);
+    async proceedBet(player: any, payload: PlaceBetPayload) {
+        if (payload.amount === 0) {
+            this.trialModeConsumer.consume(player);
+        } else {
+            this.gameData.roundId++;
+            await super.proceedBet(player, payload);
+        }
         this.resetBetData(player);
     }
 

@@ -27,31 +27,31 @@ export default class PlaceBetConsumer extends BasePlaceBetConsumer {
         ];
     }
 
-    composeBetAmountValidationCriteria(player: any, _: unknown, totalAmount: number, __: boolean) {
+    composeBetAmountValidationCriteria(player: any, _: unknown, amount: number, __: boolean) {
         const settings = this.gameData.currencyGroupGames.find((x) => x.groupId.toString() === player.session.currencyGroupId);
         const minBet = Math.max(player.profile.minBet, settings?.minBet ?? 0);
         const maxBet = Math.min(player.profile.maxBet, settings?.maxBet ?? 0);
 
         return [
             {
-                failure: totalAmount < minBet,
+                failure: amount !== 0 && amount < minBet,
                 notice: this.getNoticeObj(helpers.noticeHelper.minBet, { minBet }),
             },
             {
-                failure: totalAmount > maxBet,
+                failure: amount > maxBet,
                 notice: this.getNoticeObj(helpers.noticeHelper.maxBet, { maxBet }),
             },
         ];
     }
 
     validateBetRequestParams(request: PlaceBetPayload) {
-        const { amount, numberOfRows, gameMode } = request;
+        const { numberOfRows, gameMode } = request;
         const isValidNumberOfRows = numberOfRows >= NUMBER_OF_ROWS.min && numberOfRows <= NUMBER_OF_ROWS.max;
         const isValidGameMode = Object.values(GAME_MODE).includes(gameMode);
 
         return [
             {
-                failure: !amount || !isValidNumberOfRows || !isValidGameMode,
+                failure: !isValidNumberOfRows || !isValidGameMode,
                 notice: this.getNoticeObj(helpers.noticeHelper.invalidBet),
             },
         ];
@@ -62,6 +62,7 @@ export default class PlaceBetConsumer extends BasePlaceBetConsumer {
             freeBet: payload.freeBet ?? false,
             receivedTime: payload.receivedTime ?? new Date(),
             mode: payload.m ?? this.DisplayMode.Landscape,
+            amount: payload.amount ?? 0,
         });
 
         const { amount, numberOfRows, gameMode } = payload;

@@ -7,7 +7,7 @@ import { gameConfig } from "../_stubs/test-data";
 
 const socketOptions = socketOptionsFunc(appConfigs.hostingPort);
 
-describe("when place bet", () => {
+describe("place bet and settle", () => {
     let client;
 
     beforeAll(async () => {
@@ -105,7 +105,6 @@ describe("when place bet", () => {
 
     describe("when place bet with invalid data", () => {
         const testCases = [
-            { payload: { gameMode: 0, numberOfRows: 8, clientSeed: "1234" }, expected: { errorCode: "SB1935" } },
             { payload: { amount: 100, numberOfRows: 8, clientSeed: "1234" }, expected: { errorCode: "SB1935" } },
             { payload: { amount: 100, gameMode: 0, clientSeed: "1234" }, expected: { errorCode: "SB1935" } },
             { payload: { amount: 100, gameMode: 0, numberOfRows: 8 }, expected: { errorCode: "SB1935" } },
