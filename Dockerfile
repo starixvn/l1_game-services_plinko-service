@@ -22,6 +22,7 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/build ./
 COPY --from=builder /app/package.json ./
 COPY --from=builder /app/yarn.lock ./
+COPY --from=builder /app/lightning-data ./lightning-data
 
 EXPOSE 5000
 CMD [ "node", "--import=extensionless/register","./app.js" ]

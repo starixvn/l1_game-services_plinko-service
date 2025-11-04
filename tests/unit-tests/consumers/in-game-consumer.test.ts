@@ -49,8 +49,10 @@ describe("InGameConsumer", () => {
                 enabled: true,
                 plinkoConfig: {
                     odds: { 0: { 8: [1, 2, 3, 4, 5, 6, 7, 8, 9] } },
+                    enabledLightningMode: false,
                 },
                 randomMode: 1,
+                maxWinPerRound: 1000,
             },
             umMessages: "Game disabled",
             exchangeRates: {
@@ -130,7 +132,12 @@ describe("InGameConsumer", () => {
         it("should build and emit payload when game is enabled", async () => {
             // Arrange
             const expectedPayload = {
-                gameConfigs: { ...mockGameData.currencyGroupGames[0], odds: mockGameData.gameConfigs.plinkoConfig.odds },
+                gameConfigs: {
+                    ...mockGameData.currencyGroupGames[0],
+                    odds: mockGameData.gameConfigs.plinkoConfig.odds,
+                    enabledLightningMode: false,
+                    maxWinPerRound: 1000,
+                },
                 roundHistory: [],
                 user: { balance: 1000, rate: 1.0 },
                 playerResultBoard: { players: mockGameData.playerResultBoard },

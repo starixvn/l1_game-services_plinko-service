@@ -60,6 +60,7 @@ export const gameConfig = {
                 16: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
             },
         },
+        enabledLightningMode: true,
     },
 };
 
@@ -138,6 +139,8 @@ export const createRoundData = (uid) => {
             result: [1, 1, 0, 1, 1, 0, 0, 0],
             settlementResult: { slotIndex: 4, multiplier: 5 },
             exchangeRateId: 2089,
+            lightningKey: "",
+            lightningBoard: undefined,
         },
         {
             id: 1,
@@ -161,6 +164,8 @@ export const createRoundData = (uid) => {
             result: [1, 1, 0, 1, 1, 0, 0, 0],
             settlementResult: { slotIndex: 4, multiplier: 5 },
             exchangeRateId: 2089,
+            lightningKey: "",
+            lightningBoard: undefined,
         },
     ];
 };

@@ -1,3 +1,4 @@
+import { GAME_MODE, NUMBER_OF_ROWS } from "../../../src/constants";
 import RoundResultConsumer from "../../../src/consumers/round-result-consumer";
 import SettleGameRoundConsumer from "../../../src/consumers/settle-game-round-consumer";
 import { SettlementResult, PlinkoRound } from "../../../src/types";
@@ -14,16 +15,16 @@ jest.mock("sc-game-base/src/core/event-consumers", () => ({
     },
 }));
 
-// Mock RoundResultConsumer
-const mockGenerateResultByBet = jest.fn();
-
 // Mock Date
 const mockDate = new Date("2024-01-01T00:00:00Z");
 jest.spyOn(global, "Date").mockImplementation(() => mockDate);
 
+// Mock RoundResultConsumer
+const mockGenerateRoundData = jest.fn();
+
 jest.mock("../../../src/consumers/round-result-consumer", () => {
     return class {
-        generateResultByBet = mockGenerateResultByBet;
+        generateRoundData = mockGenerateRoundData;
         constructor() {
             return this;
         }
@@ -37,20 +38,19 @@ describe("SettleGameRoundConsumer", () => {
     let mockRoundsRepository: any;
     let mockDefinition: any;
     let mockPlayer: any;
+    let mockPayload: any;
 
     beforeEach(() => {
         jest.clearAllMocks();
 
         // Setup mocks
+        mockPayload = {
+            amount: 100,
+            numberOfRows: 12,
+            gameMode: 1,
+            clientSeed: "test-seed",
+        };
         mockGameData = {
-            ingame: {
-                testPlayer: {
-                    numberOfRows: 12,
-                    gameMode: 1,
-                    amount: 100,
-                    clientSeed: "test-seed",
-                },
-            },
             gameConfigs: {
                 plinkoConfig: {
                     odds: {
@@ -66,6 +66,9 @@ describe("SettleGameRoundConsumer", () => {
             currencyGroupGames: [{ groupId: "group1", maxBet: 1000 }],
             exchangeRates: {
                 exId: 123,
+                code: {
+                    USD: 1,
+                },
             },
         };
 
@@ -85,12 +88,14 @@ describe("SettleGameRoundConsumer", () => {
             },
             session: {
                 currencyName: "USD",
+                currencyCode: "USD",
                 siteId: "site1",
                 siteName: "site1",
                 playerId: "player1",
                 operatorId: "op1",
                 system: 10,
                 currencyGroupId: "group1",
+                multiplier: 1,
             },
         };
 
@@ -100,7 +105,9 @@ describe("SettleGameRoundConsumer", () => {
 
         // Create instance
         // @ts-ignore
-        settleGameRoundConsumer = new SettleGameRoundConsumer({ roundResultConsumer: mockRoundResultConsumer });
+        settleGameRoundConsumer = new SettleGameRoundConsumer({
+            roundResultConsumer: mockRoundResultConsumer,
+        });
         settleGameRoundConsumer.roundResultConsumer = mockRoundResultConsumer;
         settleGameRoundConsumer.gameData = mockGameData;
         settleGameRoundConsumer.roundsRepository = mockRoundsRepository;
@@ -111,23 +118,66 @@ describe("SettleGameRoundConsumer", () => {
         it("should successfully settle a game round", async () => {
             // Arrange
             const roundId = 123;
-            const rate = 1;
             const mockResult = [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
             const slotIndex = 2;
             const expectedSettlementResult: SettlementResult = {
                 slotIndex,
                 multiplier: 2.5,
             };
-            mockGenerateResultByBet.mockResolvedValue(mockResult);
-            mockDefinition.settle.mockReturnValue(slotIndex);
-            mockRoundsRepository.create.mockResolvedValue({ id: roundId, time: mockDate, amount: 100, betWin: 250, reachMaxWin: false });
+            const mockRoundData = {
+                result: mockResult,
+                settlementResult: expectedSettlementResult,
+                odds: mockGameData.gameConfigs.plinkoConfig.odds,
+                board: undefined,
+            };
+            const mockRound: PlinkoRound = {
+                id: roundId,
+                uid: mockPlayer.UID,
+                name: mockPlayer.profile.name,
+                amount: 100,
+                totalAmount: 100,
+                betWin: 250,
+                reachMaxWin: false,
+                paid: true,
+                rate: 1,
+                odds: mockGameData.gameConfigs.plinkoConfig.odds,
+                time: mockDate,
+                clientSeed: "test-seed",
+                currency: "USD",
+                siteId: "site1",
+                siteName: "site1",
+                playerId: "player1",
+                operatorId: "op1",
+                appType: 10,
+                gameMode: 1,
+                numberOfRows: 12,
+                lightningKey: undefined,
+                lightningBoard: undefined,
+                result: mockResult,
+                settlementResult: expectedSettlementResult,
+                exchangeRateId: 123,
+            };
+            mockGenerateRoundData.mockResolvedValue(mockRoundData);
+            settleGameRoundConsumer.createNewRoundDocument = jest.fn().mockResolvedValue(mockRound);
+            settleGameRoundConsumer.settleBet = jest.fn();
 
             // Act
-            const result = await settleGameRoundConsumer.settle(mockPlayer, roundId, rate);
+            const result = await settleGameRoundConsumer.settle(mockPlayer, roundId, mockPayload);
 
             // Assert
-            expect(mockGenerateResultByBet).toHaveBeenCalledWith("testPlayer", roundId);
-            expect(mockDefinition.settle).toHaveBeenCalledWith(mockResult);
+            expect(mockGenerateRoundData).toHaveBeenCalledWith("testPlayer", roundId, mockPayload);
+            expect(settleGameRoundConsumer.createNewRoundDocument).toHaveBeenCalledWith(
+                mockPlayer,
+                {
+                    roundId,
+                    result: mockResult,
+                    settlementResult: expectedSettlementResult,
+                    odds: mockGameData.gameConfigs.plinkoConfig.odds,
+                    board: undefined,
+                },
+                mockPayload
+            );
+            expect(settleGameRoundConsumer.settleBet).toHaveBeenCalledWith(mockRound);
             expect(result).toEqual({
                 roundId,
                 result: mockResult,
@@ -145,37 +195,113 @@ describe("SettleGameRoundConsumer", () => {
         it("should return null when round creation fails", async () => {
             // Arrange
             const roundId = 123;
-            const rate = 1.5;
             const mockResult = [1, 0, 0, 0, 0, 0, 0, 0, 0];
+            const mockRoundData = {
+                result: mockResult,
+                settlementResult: { slotIndex: 2, multiplier: 2.5 },
+                odds: mockGameData.gameConfigs.plinkoConfig.odds,
+                board: undefined,
+            };
 
-            mockGenerateResultByBet.mockResolvedValue(mockResult);
-            mockDefinition.settle.mockReturnValue(1);
+            mockGenerateRoundData.mockResolvedValue(mockRoundData);
             settleGameRoundConsumer.createNewRoundDocument = jest.fn().mockResolvedValue(null);
             settleGameRoundConsumer.settleBet = jest.fn();
 
             // Act
-            const result = await settleGameRoundConsumer.settle(mockPlayer, roundId, rate);
+            const result = await settleGameRoundConsumer.settle(mockPlayer, roundId, mockPayload);
 
             // Assert
+            expect(mockGenerateRoundData).toHaveBeenCalledWith("testPlayer", roundId, mockPayload);
+            expect(settleGameRoundConsumer.createNewRoundDocument).toHaveBeenCalled();
             expect(result).toBeNull();
             expect(settleGameRoundConsumer.settleBet).not.toHaveBeenCalled();
         });
 
-        it("should slice result to match number of rows", async () => {
+        it("should successfully settle a game round with lightning board", async () => {
             // Arrange
             const roundId = 123;
-            const rate = 1.5;
-            const fullResult = [1, 0, 1, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1]; // 16 elements
-            const expectedSlicedResult = [1, 0, 1, 0, 1, 1, 0, 0, 1, 0, 1, 1]; // First 12 elements
-
-            mockGenerateResultByBet.mockResolvedValue(fullResult);
-            mockDefinition.settle.mockReturnValue(7);
+            const mockResult = [1, 0, 1, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1];
+            const expectedSettlementResult: SettlementResult = {
+                slotIndex: 3,
+                multiplier: 40,
+            };
+            const mockBoard = {
+                odds: [10, 20, 30, 40, 50],
+                pegMultipliers: [
+                    { row: 0, column: 0, multiplier: 1.5 },
+                    { row: 1, column: 1, multiplier: 2.0 },
+                ],
+            };
+            const lightningPayload = {
+                ...mockPayload,
+                isLightningMode: true,
+                lightningKey: "lightning-key-123",
+                gameMode: 3,
+                numberOfRows: 16,
+            };
+            const mockRoundData = {
+                result: mockResult,
+                settlementResult: expectedSettlementResult,
+                odds: {
+                    ...mockGameData.gameConfigs.plinkoConfig.odds,
+                    [GAME_MODE.LIGHTNING]: { [NUMBER_OF_ROWS.lightning]: mockBoard.odds },
+                },
+                board: mockBoard,
+            };
+            const mockRound: PlinkoRound = {
+                id: roundId,
+                uid: mockPlayer.UID,
+                name: mockPlayer.profile.name,
+                amount: 100,
+                totalAmount: 100,
+                betWin: 4000,
+                reachMaxWin: false,
+                paid: true,
+                rate: 1,
+                odds: mockRoundData.odds,
+                time: mockDate,
+                clientSeed: "test-seed",
+                currency: "USD",
+                siteId: "site1",
+                siteName: "site1",
+                playerId: "player1",
+                operatorId: "op1",
+                appType: 10,
+                gameMode: 3,
+                numberOfRows: 16,
+                lightningKey: "lightning-key-123",
+                lightningBoard: mockBoard,
+                result: mockResult,
+                settlementResult: expectedSettlementResult,
+                exchangeRateId: 123,
+            };
+            mockGenerateRoundData.mockResolvedValue(mockRoundData);
+            settleGameRoundConsumer.createNewRoundDocument = jest.fn().mockResolvedValue(mockRound);
+            settleGameRoundConsumer.settleBet = jest.fn();
 
             // Act
-            await settleGameRoundConsumer.settle(mockPlayer, roundId, rate);
+            const result = await settleGameRoundConsumer.settle(mockPlayer, roundId, lightningPayload);
 
             // Assert
-            expect(mockDefinition.settle).toHaveBeenCalledWith(expectedSlicedResult);
+            expect(mockGenerateRoundData).toHaveBeenCalledWith("testPlayer", roundId, lightningPayload);
+            expect(settleGameRoundConsumer.createNewRoundDocument).toHaveBeenCalledWith(
+                mockPlayer,
+                { roundId, result: mockResult, settlementResult: expectedSettlementResult, odds: mockRoundData.odds, board: mockBoard },
+                lightningPayload
+            );
+            expect(settleGameRoundConsumer.settleBet).toHaveBeenCalledWith(mockRound);
+            expect(result).toEqual({
+                roundId,
+                result: mockResult,
+                settlementResult: expectedSettlementResult,
+                winAmount: 4000,
+                amount: 100,
+                reachMaxWin: false,
+                time: mockDate,
+                gameMode: 3,
+                numberOfRows: 16,
+                odds: mockRoundData.odds,
+            });
         });
     });
 
@@ -213,7 +339,6 @@ describe("SettleGameRoundConsumer", () => {
         it("should create round document with correct structure", async () => {
             // Arrange
             const roundId = 123;
-            const rate = 1.5;
             const result = [1, 0, 0, 0, 0, 1, 0, 0, 0];
             const settlementResult: SettlementResult = {
                 slotIndex: 2,
@@ -228,7 +353,7 @@ describe("SettleGameRoundConsumer", () => {
                 betWin: 250, // 100 * 2.5
                 reachMaxWin: false,
                 paid: true,
-                rate,
+                rate: 1,
                 odds: mockGameData.gameConfigs.plinkoConfig.odds,
                 time: mockDate,
                 clientSeed: "test-seed",
@@ -240,6 +365,8 @@ describe("SettleGameRoundConsumer", () => {
                 appType: 10,
                 gameMode: 1,
                 numberOfRows: 12,
+                lightningKey: undefined,
+                lightningBoard: null,
                 result,
                 settlementResult,
                 exchangeRateId: 123,
@@ -248,7 +375,11 @@ describe("SettleGameRoundConsumer", () => {
             mockRoundsRepository.create.mockResolvedValue(expectedRound);
 
             // Act
-            const resultRound = await settleGameRoundConsumer.createNewRoundDocument(mockPlayer, rate, roundId, result, settlementResult);
+            const resultRound = await settleGameRoundConsumer.createNewRoundDocument(
+                mockPlayer,
+                { roundId, result, settlementResult, odds: mockGameData.gameConfigs.plinkoConfig.odds, board: null },
+                mockPayload
+            );
 
             // Assert
             expect(mockRoundsRepository.create).toHaveBeenCalledWith(expectedRound);
@@ -258,13 +389,12 @@ describe("SettleGameRoundConsumer", () => {
         it("should create round document with reachMaxWin true if bet win is equal to max win per round", async () => {
             // Arrange
             const roundId = 123;
-            const rate = 1;
             const result = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
             const settlementResult: SettlementResult = {
                 slotIndex: 0,
                 multiplier: 5000,
             };
-            mockGameData.ingame.testPlayer = {
+            const payload = {
                 amount: 1000,
                 gameMode: 1,
                 numberOfRows: 16,
@@ -279,7 +409,7 @@ describe("SettleGameRoundConsumer", () => {
                 betWin: 1000,
                 reachMaxWin: true,
                 paid: true,
-                rate,
+                rate: 1,
                 odds: mockGameData.gameConfigs.plinkoConfig.odds,
                 time: mockDate,
                 clientSeed: "1234",
@@ -291,6 +421,8 @@ describe("SettleGameRoundConsumer", () => {
                 appType: 10,
                 gameMode: 1,
                 numberOfRows: 16,
+                lightningKey: undefined,
+                lightningBoard: null,
                 result,
                 settlementResult,
                 exchangeRateId: 123,
@@ -298,7 +430,11 @@ describe("SettleGameRoundConsumer", () => {
             mockRoundsRepository.create.mockResolvedValue(expectedRound);
 
             // Act
-            const resultRound = await settleGameRoundConsumer.createNewRoundDocument(mockPlayer, rate, roundId, result, settlementResult);
+            const resultRound = await settleGameRoundConsumer.createNewRoundDocument(
+                mockPlayer,
+                { roundId, result, settlementResult, odds: mockGameData.gameConfigs.plinkoConfig.odds, board: null },
+                payload
+            );
 
             // Assert
             expect(mockRoundsRepository.create).toHaveBeenCalledWith(expectedRound);

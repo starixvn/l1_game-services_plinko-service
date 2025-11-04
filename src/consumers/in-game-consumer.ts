@@ -42,6 +42,6 @@ export default class InGameConsumer extends BaseInGameConsumer {
     getGameConfigs(realPlayer: any) {
         const plinkoConfig = (this.gameData.gameConfigs as unknown as GameConfigs)?.plinkoConfig;
         const settings = this.gameData.currencyGroupGames.find((x) => x.groupId?.toString() === realPlayer.session?.currencyGroupId);
-        return { ...settings, ...plinkoConfig };
+        return { ...settings, ...plinkoConfig, maxWinPerRound: this.gameData.gameConfigs?.maxWinPerRound };
     }
 }

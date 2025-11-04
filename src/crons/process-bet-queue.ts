@@ -19,7 +19,7 @@ export default class ProcessBetQueue extends BaseProcessBetQueue {
 
     async proceedBet(player: any, payload: PlaceBetPayload) {
         if (payload.amount === 0) {
-            this.trialModeConsumer.consume(player);
+            this.trialModeConsumer.consume(player, payload);
         } else {
             this.gameData.roundId++;
             await super.proceedBet(player, payload);
@@ -53,7 +53,7 @@ export default class ProcessBetQueue extends BaseProcessBetQueue {
     async handleSuccessBet(player: any, response: any, roundId: number, payload: PlaceBetPayload, applicableInterceptors: any) {
         const rate = this.calculateCurrencyRate(player.session);
         const placingBetResult = this.generatePlacingBetResult(player, response, payload, rate);
-        const finish = await this.settleGameRoundConsumer.settle(player, roundId, rate);
+        const finish = await this.settleGameRoundConsumer.settle(player, roundId, payload);
         if (applicableInterceptors) {
             await this.executeInterceptorEvent("afterSuccessEvent", applicableInterceptors, {
                 player,

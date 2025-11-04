@@ -1,5 +1,6 @@
 import { SeedHelper, ServerSeedHelper } from "sc-game-base/src/core/helpers";
 import { generateResult, getSettlementResult } from "../../../src/helpers/result-helper";
+
 describe("Statistic run 100,000 times", () => {
     const totalRuns = 100_000;
     const randomModes = [1, 2, 3];
@@ -49,7 +50,7 @@ describe("Statistic run 100,000 times", () => {
         const percentage: Record<number, number> = {};
         // Act
         for (let i = 0; i < totalRuns; i++) {
-            const slotIndex = run(mode, numberOfRow);
+            const { slotIndex } = run(mode, numberOfRow);
             statistic[slotIndex] = (statistic[slotIndex] || 0) + 1;
         }
         for (let slotIndex = 0; slotIndex <= numberOfRow; slotIndex++) {

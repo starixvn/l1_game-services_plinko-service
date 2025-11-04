@@ -1,30 +1,19 @@
-import { GameDefinition, Helpers, BaseEventPublishers } from "sc-game-base/src/core";
-import GameData from "../game-data";
-import { GameConfigs, SettlementResult } from "../types";
+import { BaseEventPublisher } from "sc-game-base/src/core/event-publishers";
+import { PlaceBetPayload } from "../types";
+import RoundResultConsumer from "./round-result-consumer";
 
 export default class TrialModeConsumer {
-    definition: GameDefinition;
-    gameData: GameData;
-    publisher: BaseEventPublishers.BaseEventPublisher;
+    roundResultConsumer: RoundResultConsumer;
+    publisher: BaseEventPublisher;
 
-    constructor({
-        definition,
-        gameData,
-        publisher,
-    }: {
-        definition: GameDefinition;
-        gameData: GameData;
-        publisher: BaseEventPublishers.BaseEventPublisher;
-    }) {
-        this.definition = definition;
-        this.gameData = gameData;
-        this.publisher = publisher;
+    constructor(props: { roundResultConsumer: RoundResultConsumer; publisher: BaseEventPublisher }) {
+        this.roundResultConsumer = props.roundResultConsumer;
+        this.publisher = props.publisher;
     }
 
-    consume(player: any) {
-        const playerName = player.profile.name;
-        const { numberOfRows, gameMode } = this.gameData.ingame[playerName];
-        const finish = this.generateResult(playerName);
+    async consume(player: any, payload: PlaceBetPayload) {
+        const { numberOfRows, gameMode } = payload;
+        const finish = await this.generateResult(player.profile.name, payload);
         this.publisher.publishToUser(player.UID, {
             endBet: 0,
             ownBets: { gameMode, numberOfRows },
@@ -32,21 +21,13 @@ export default class TrialModeConsumer {
         });
     }
 
-    generateResult(playerName: string) {
-        const { plinkoConfig, randomMode } = this.gameData.gameConfigs as unknown as GameConfigs;
-        const { numberOfRows, gameMode } = this.gameData.ingame[playerName];
-        const serverSeed = Helpers.ServerSeedHelper.generateServerSeed(randomMode);
-        const result = this.definition.generateResult(Helpers.SeedHelper.getSHA512Hash(serverSeed)).slice(0, numberOfRows);
-        const slotIndex = this.definition.settle(result) as number;
-        const settlementResult: SettlementResult = {
-            slotIndex,
-            multiplier: +(plinkoConfig?.odds?.[gameMode]?.[numberOfRows]?.[slotIndex] ?? 1),
-        };
-
+    async generateResult(playerName: string, payload: PlaceBetPayload) {
+        const { numberOfRows, gameMode } = payload;
+        const { result, settlementResult, odds } = await this.roundResultConsumer.generateRoundData(playerName, 0, payload);
         return {
             gameMode,
             numberOfRows,
-            odds: plinkoConfig.odds,
+            odds,
             result,
             settlementResult,
             winAmount: 0,

@@ -13,8 +13,15 @@ import { Bot, GameCron, ProcessBetQueue } from "./crons";
 import { Results, Rounds } from "./models";
 import RoundQuery from "./query-apis/round-query";
 import SocketRouter from "./routers/socket-router";
+import { LightningBoardAssigner } from "./lightning-feature/lightning-board-assigner";
 
 export default class ContainerRegistry extends Core.ContainerRegistry {
+    register(appConfigs: any, definition: Core.GameDefinition, gameData: Core.GameData) {
+        const container = super.register(appConfigs, definition, gameData);
+        this.registerLightningFeature();
+        return container;
+    }
+
     registerConsumers() {
         super.registerConsumers();
 
@@ -72,6 +79,12 @@ export default class ContainerRegistry extends Core.ContainerRegistry {
 
         this.container.register({
             socketRouter: asClass(SocketRouter).proxy(),
+        });
+    }
+
+    registerLightningFeature() {
+        this.container.register({
+            lightningBoardAssigner: asClass(LightningBoardAssigner).singleton().proxy(),
         });
     }
 }

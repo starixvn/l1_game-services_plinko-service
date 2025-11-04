@@ -9,6 +9,7 @@
         "test-coverage": "jest --collect-coverage --testPathPattern=tests/unit-tests/",
         "integration-test": "npm run build && jest --config ./jest.integration-test.config.cjs --testPathPattern=tests/integration-tests/ --detectOpenHandles --forceExit",
         "dev": "tsx watch ./src/app.ts",
+        "run-rtp": "tsx ./tests/rtp/index.ts",
         "dev-build": "nodemon --import=extensionless/register --experimental-specifier-resolution=node --watch ./build ./build/app.js",
         "stats": "tsx watch ./rtp/index.ts",
         "reg": "npm set registry http://npm.lumigame.com"

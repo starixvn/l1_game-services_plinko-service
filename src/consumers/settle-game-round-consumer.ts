@@ -1,27 +1,20 @@
 import { SettleGameRoundConsumer as BaseSettleGameRoundConsumer } from "sc-game-base/src/core/event-consumers";
 import RoundResultConsumer from "./round-result-consumer";
-import { GameConfigs, PlinkoRound, SettlementResult } from "../types";
+import { LightningBoard, PlaceBetPayload, PlinkoOdds, PlinkoRound, SettlementResult } from "../types";
 
 export default class SettleGameRoundConsumer extends BaseSettleGameRoundConsumer {
     roundResultConsumer: RoundResultConsumer;
+
     constructor(props: any) {
         super(props);
         this.roundResultConsumer = props.roundResultConsumer;
     }
 
-    async settle(player: any, roundId: number, rate: number) {
+    async settle(player: any, roundId: number, payload: PlaceBetPayload) {
         const playerName = player.profile.name;
-        const { numberOfRows, gameMode } = this.gameData.ingame[player.profile.name];
-        const { plinkoConfig } = this.gameData.gameConfigs as unknown as GameConfigs;
-
-        const result = (await this.roundResultConsumer.generateResultByBet(playerName, roundId)).slice(0, numberOfRows);
-        const slotIndex = this.definition.settle(result) as number;
-        const settlementResult: SettlementResult = {
-            slotIndex,
-            multiplier: +(plinkoConfig?.odds?.[gameMode]?.[numberOfRows]?.[slotIndex] ?? 1),
-        };
-
-        const newRound = await this.createNewRoundDocument(player, rate, roundId, result, settlementResult);
+        const { numberOfRows, gameMode } = payload;
+        const { result, settlementResult, odds, board } = await this.roundResultConsumer.generateRoundData(playerName, roundId, payload);
+        const newRound = await this.createNewRoundDocument(player, { roundId, result, settlementResult, odds, board }, payload);
 
         if (newRound) {
             await this.settleBet(newRound);
@@ -35,7 +28,7 @@ export default class SettleGameRoundConsumer extends BaseSettleGameRoundConsumer
                 time: newRound.time,
                 gameMode,
                 numberOfRows,
-                odds: plinkoConfig.odds,
+                odds,
             };
         }
         return null;
@@ -49,13 +42,29 @@ export default class SettleGameRoundConsumer extends BaseSettleGameRoundConsumer
         return maxWinPerRound * maxBet;
     }
 
-    async createNewRoundDocument(player: any, rate: number, roundId: number, result: number[], settlementResult: SettlementResult) {
-        const { numberOfRows, gameMode, amount, clientSeed } = this.gameData.ingame[player.profile.name];
-        const { plinkoConfig } = this.gameData.gameConfigs as unknown as GameConfigs;
+    async createNewRoundDocument(
+        player: any,
+        {
+            roundId,
+            result,
+            settlementResult,
+            odds,
+            board,
+        }: {
+            roundId: number;
+            result: number[];
+            settlementResult: SettlementResult;
+            odds: PlinkoOdds;
+            board: LightningBoard | null;
+        },
+        payload: PlaceBetPayload
+    ) {
+        const { numberOfRows, gameMode, amount, clientSeed, lightningKey } = payload;
         const { exchangeRates } = this.gameData;
         const maxWinPerRound = this.getMaxWinPerRound(player);
         const actualWin = amount * settlementResult.multiplier;
-        const betWin = Math.min(actualWin, maxWinPerRound);
+        const betWin = parseFloat(Math.min(actualWin, maxWinPerRound).toFixed(2));
+        const rate = player.session.multiplier * exchangeRates.code[player.session.currencyCode];
 
         const newRound: PlinkoRound = {
             id: roundId,
@@ -67,7 +76,7 @@ export default class SettleGameRoundConsumer extends BaseSettleGameRoundConsumer
             reachMaxWin: betWin === maxWinPerRound,
             paid: true,
             rate,
-            odds: plinkoConfig.odds,
+            odds,
             time: new Date(),
             clientSeed,
             currency: player.session.currencyName,
@@ -78,6 +87,8 @@ export default class SettleGameRoundConsumer extends BaseSettleGameRoundConsumer
             appType: player.session.system,
             gameMode,
             numberOfRows,
+            lightningKey,
+            lightningBoard: board,
             result,
             settlementResult,
             exchangeRateId: exchangeRates.exId,

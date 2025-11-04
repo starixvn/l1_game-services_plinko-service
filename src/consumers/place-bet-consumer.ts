@@ -2,7 +2,8 @@ import { helpers } from "sc-common";
 import { PlaceBetConsumer as BasePlaceBetConsumer } from "sc-game-base/src/core/event-consumers";
 import notices from "../constants/notices";
 import { GAME_MODE, NUMBER_OF_ROWS } from "../constants";
-import { PlaceBetPayload } from "../types";
+import { GameConfigs, PlaceBetPayload } from "../types";
+import { isValidLightningKey } from "../helpers/string-helper";
 
 export default class PlaceBetConsumer extends BasePlaceBetConsumer {
     composeValidationCriteria(player: any, betChoice: unknown, amount: number, freeBet: boolean, _: number) {
@@ -45,7 +46,15 @@ export default class PlaceBetConsumer extends BasePlaceBetConsumer {
     }
 
     validateBetRequestParams(request: PlaceBetPayload) {
-        const { numberOfRows, gameMode } = request;
+        const { numberOfRows, gameMode, isLightningMode, lightningKey } = request;
+        if (isLightningMode) {
+            return [
+                {
+                    failure: !lightningKey || typeof lightningKey !== "string" || !isValidLightningKey(lightningKey),
+                    notice: this.getNoticeObj(helpers.noticeHelper.invalidBet),
+                },
+            ];
+        }
         const isValidNumberOfRows = numberOfRows >= NUMBER_OF_ROWS.min && numberOfRows <= NUMBER_OF_ROWS.max;
         const isValidGameMode = Object.values(GAME_MODE).includes(gameMode);
 
@@ -57,17 +66,34 @@ export default class PlaceBetConsumer extends BasePlaceBetConsumer {
         ];
     }
 
+    validateLightningRequest(payload: PlaceBetPayload, player: any) {
+        const { isLightningMode } = payload;
+        if (!isLightningMode) {
+            return true;
+        }
+        const { plinkoConfig } = this.gameData.gameConfigs as unknown as GameConfigs;
+        const criteria = [
+            {
+                failure: !plinkoConfig.enabledLightningMode,
+                notice: this.getNoticeObj(helpers.noticeHelper.invalidBet),
+            },
+        ];
+        return this.verifyCriteria(criteria, player, "");
+    }
+
     consume(player: any, payload: PlaceBetPayload) {
         Object.assign(payload, {
             freeBet: payload.freeBet ?? false,
             receivedTime: payload.receivedTime ?? new Date(),
             mode: payload.m ?? this.DisplayMode.Landscape,
             amount: payload.amount ?? 0,
+            numberOfRows: payload.isLightningMode ? NUMBER_OF_ROWS.lightning : payload.numberOfRows,
+            gameMode: payload.isLightningMode ? GAME_MODE.LIGHTNING : payload.gameMode,
         });
 
-        const { amount, numberOfRows, gameMode } = payload;
+        const { amount } = payload;
 
-        if (!this.validateRequestParams(payload, player)) {
+        if (!this.validateRequestParams(payload, player) || !this.validateLightningRequest(payload, player)) {
             return;
         }
 
@@ -85,8 +111,6 @@ export default class PlaceBetConsumer extends BasePlaceBetConsumer {
                 betProcessing: false,
                 betQueue: [{ player, payload }],
                 operatorId: player.session.operatorId,
-                numberOfRows,
-                gameMode,
                 amount,
                 clientSeed: payload.clientSeed,
                 hasBet: true,

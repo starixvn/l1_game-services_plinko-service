@@ -1,6 +1,7 @@
 export type PlinkoOdds = Record<number, Record<number, number[]>>;
 export type PlinkoConfig = {
     odds: PlinkoOdds;
+    enabledLightningMode?: boolean;
 };
 export type SettlementResult = {
     slotIndex: number;
@@ -29,6 +30,8 @@ export type PlinkoRound = {
     appType: number;
     gameMode: number;
     numberOfRows: number;
+    lightningKey?: string;
+    lightningBoard?: LightningBoard | null;
     exchangeRateId: number;
 };
 export type GameConfigs = {
@@ -56,9 +59,22 @@ export type PlaceBetPayload = {
     gameMode: number;
     numberOfRows: number;
     clientSeed: string;
+    isLightningMode?: boolean;
+    lightningKey?: string;
     time?: Date;
     receivedTime?: Date;
     freeBet?: boolean;
     m?: string;
     mode?: string;
+};
+
+export type PegMultiplier = {
+    row: number;
+    column: number;
+    multiplier: number;
+};
+
+export type LightningBoard = {
+    odds: number[];
+    pegMultipliers: PegMultiplier[];
 };

@@ -4,6 +4,7 @@ import appConfigs from "../../../build/app-configs.IGT";
 import { socketOptionsFunc } from "../_stubs/test-data";
 import { initUserSession } from "../helper/helper";
 import { gameConfig } from "../_stubs/test-data";
+import { GAME_MODE, NUMBER_OF_ROWS } from "../../../build/constants";
 
 const socketOptions = socketOptionsFunc(appConfigs.hostingPort);
 
@@ -29,97 +30,208 @@ describe("place bet and settle", () => {
         client = null;
     });
 
-    describe("when place bet with valid data", () => {
-        const payload = { amount: 100, gameMode: 0, numberOfRows: 8, clientSeed: "1234" };
-        it("should receive end bet", async () => {
-            // Act
-            client.emit(eventTypes.bet, payload);
-
-            // Assert
-            const { endBet } = await client.handleGameEvent((data) => data.endBet);
-            expect(endBet).toEqual(100);
-        });
-
-        it("should receive own bets", async () => {
-            // Act
-            client.emit(eventTypes.bet, payload);
-
-            // Assert
-            const { ownBets } = await client.handleGameEvent((data) => data.ownBets);
-            expect(ownBets).toEqual({ gameMode: 0, numberOfRows: 8 });
-        });
-
-        it("should receive finish", async () => {
-            // Act
-            client.emit(eventTypes.bet, payload);
-
-            // Assert
-            const { finish } = await client.handleGameEvent((data) => data.finish);
-            expect(finish).toHaveProperty("roundId");
-            expect(finish).toHaveProperty("result");
-            expect(finish).toHaveProperty("settlementResult");
-            expect(finish).toHaveProperty("winAmount");
-            expect(finish).toHaveProperty("amount");
-            expect(finish).toHaveProperty("reachMaxWin");
-            expect(finish).toHaveProperty("time");
-            expect(finish).toHaveProperty("gameMode");
-            expect(finish).toHaveProperty("numberOfRows");
-            expect(finish).toHaveProperty("odds");
-            expect(finish.roundId).toBeGreaterThanOrEqual(1);
-            expect(finish.result.length).toEqual(payload.numberOfRows);
-            expect(finish.result.every((path) => path === 0 || path === 1)).toBeTruthy();
-            expect(finish.settlementResult.slotIndex).toBeGreaterThanOrEqual(0);
-            expect(finish.settlementResult.slotIndex).toBeLessThanOrEqual(payload.numberOfRows);
-            expect(typeof finish.settlementResult.multiplier).toBe("number");
-            expect(finish.winAmount).toBeGreaterThanOrEqual(0);
-            expect(finish.amount).toBeGreaterThanOrEqual(0);
-            expect(typeof finish.reachMaxWin).toBe("boolean");
-            expect(finish.gameMode).toEqual(payload.gameMode);
-            expect(finish.numberOfRows).toEqual(payload.numberOfRows);
-            expect(finish.odds).toEqual(gameConfig.plinkoConfig.odds);
-        });
-
-        it("should receive playerBet", async () => {
-            // Act
-            client.emit(eventTypes.bet, payload);
-
-            // Assert
-            const { playerBet } = await client.handleGameEvent((data) => data.playerBet);
-            expect(playerBet.name).toEqual("N***ser"); // mask name NormalUser
-            expect(playerBet.betAmount).toEqual(100);
-            expect(playerBet.winAmount).toBeGreaterThanOrEqual(0);
-            expect(playerBet.multiplier).toBeGreaterThanOrEqual(0);
-        });
-
-        it("should receive pf after finish", async () => {
-            // Act
-            client.emit(eventTypes.bet, payload);
-            await client.handleGameEvent((data) => data.finish);
-
-            // Assert
-            const { pf } = await client.handleGameEvent((data) => data.pf);
-            expect(pf.serverSeedHash).toBeDefined();
-            expect(typeof pf.serverSeedHash).toBe("string");
-        });
-    });
-
-    describe("when place bet with invalid data", () => {
-        const testCases = [
-            { payload: { amount: 100, numberOfRows: 8, clientSeed: "1234" }, expected: { errorCode: "SB1935" } },
-            { payload: { amount: 100, gameMode: 0, clientSeed: "1234" }, expected: { errorCode: "SB1935" } },
-            { payload: { amount: 100, gameMode: 0, numberOfRows: 8 }, expected: { errorCode: "SB1935" } },
-            { payload: { amount: 100, gameMode: 4, clientSeed: "1234" }, expected: { errorCode: "SB1935" } },
-            { payload: { amount: 100, gameMode: 0, numberOfRows: 5, clientSeed: "1234" }, expected: { errorCode: "SB1935" } },
-        ];
-        testCases.forEach(({ payload, expected }) => {
-            it(`should receive error notice`, async () => {
+    describe("normal mode", () => {
+        describe("when place bet with valid data", () => {
+            const payload = { amount: 100, gameMode: 0, numberOfRows: 8, clientSeed: "1234" };
+            it("should receive end bet", async () => {
                 // Act
                 client.emit(eventTypes.bet, payload);
 
                 // Assert
-                const { endBet, notice } = await client.handleGameEvent((data) => data.notice);
-                expect(endBet).toEqual(-1);
-                expect(notice).toEqual(expected);
+                const { endBet } = await client.handleGameEvent((data) => data.endBet);
+                expect(endBet).toEqual(100);
+            });
+
+            it("should receive own bets", async () => {
+                // Act
+                client.emit(eventTypes.bet, payload);
+
+                // Assert
+                const { ownBets } = await client.handleGameEvent((data) => data.ownBets);
+                expect(ownBets).toEqual({ gameMode: 0, numberOfRows: 8 });
+            });
+
+            it("should receive finish", async () => {
+                // Act
+                client.emit(eventTypes.bet, payload);
+
+                // Assert
+                const { finish } = await client.handleGameEvent((data) => data.finish);
+                expect(finish).toHaveProperty("roundId");
+                expect(finish).toHaveProperty("result");
+                expect(finish).toHaveProperty("settlementResult");
+                expect(finish).toHaveProperty("winAmount");
+                expect(finish).toHaveProperty("amount");
+                expect(finish).toHaveProperty("reachMaxWin");
+                expect(finish).toHaveProperty("time");
+                expect(finish).toHaveProperty("gameMode");
+                expect(finish).toHaveProperty("numberOfRows");
+                expect(finish).toHaveProperty("odds");
+                expect(finish.roundId).toBeGreaterThanOrEqual(1);
+                expect(finish.result.length).toEqual(payload.numberOfRows);
+                expect(finish.result.every((path) => path === 0 || path === 1)).toBeTruthy();
+                expect(finish.settlementResult.slotIndex).toBeGreaterThanOrEqual(0);
+                expect(finish.settlementResult.slotIndex).toBeLessThanOrEqual(payload.numberOfRows);
+                expect(typeof finish.settlementResult.multiplier).toBe("number");
+                expect(finish.winAmount).toBeGreaterThanOrEqual(0);
+                expect(finish.amount).toBeGreaterThanOrEqual(0);
+                expect(typeof finish.reachMaxWin).toBe("boolean");
+                expect(finish.gameMode).toEqual(payload.gameMode);
+                expect(finish.numberOfRows).toEqual(payload.numberOfRows);
+                expect(finish.odds).toEqual({ ...gameConfig.plinkoConfig.odds, [GAME_MODE.LIGHTNING]: { [NUMBER_OF_ROWS.lightning]: [] } });
+            });
+
+            it("should receive playerBet", async () => {
+                // Act
+                client.emit(eventTypes.bet, payload);
+
+                // Assert
+                const { playerBet } = await client.handleGameEvent((data) => data.playerBet);
+                expect(playerBet.name).toEqual("N***ser"); // mask name NormalUser
+                expect(playerBet.betAmount).toEqual(100);
+                expect(playerBet.winAmount).toBeGreaterThanOrEqual(0);
+                expect(playerBet.multiplier).toBeGreaterThanOrEqual(0);
+            });
+
+            it("should receive pf after finish", async () => {
+                // Act
+                client.emit(eventTypes.bet, payload);
+                await client.handleGameEvent((data) => data.finish);
+
+                // Assert
+                const { pf } = await client.handleGameEvent((data) => data.pf);
+                expect(pf.serverSeedHash).toBeDefined();
+                expect(typeof pf.serverSeedHash).toBe("string");
+            });
+        });
+
+        describe("when place bet with invalid data", () => {
+            const testCases = [
+                { payload: { amount: 100, numberOfRows: 8, clientSeed: "1234" }, expected: { errorCode: "SB1935" } },
+                { payload: { amount: 100, gameMode: 0, clientSeed: "1234" }, expected: { errorCode: "SB1935" } },
+                { payload: { amount: 100, gameMode: 0, numberOfRows: 8 }, expected: { errorCode: "SB1935" } },
+                { payload: { amount: 100, gameMode: 4, clientSeed: "1234" }, expected: { errorCode: "SB1935" } },
+                { payload: { amount: 100, gameMode: 0, numberOfRows: 5, clientSeed: "1234" }, expected: { errorCode: "SB1935" } },
+            ];
+            testCases.forEach(({ payload, expected }) => {
+                it(`should receive error notice`, async () => {
+                    // Act
+                    client.emit(eventTypes.bet, payload);
+
+                    // Assert
+                    const { endBet, notice } = await client.handleGameEvent((data) => data.notice);
+                    expect(endBet).toEqual(-1);
+                    expect(notice).toEqual(expected);
+                });
+            });
+        });
+    });
+
+    describe("lightning mode", () => {
+        describe("when place bet with valid data", () => {
+            const payload = { amount: 100, clientSeed: "1234", isLightningMode: true, lightningKey: "1234" };
+            it("should receive end bet", async () => {
+                // Act
+                client.emit(eventTypes.bet, payload);
+
+                // Assert
+                const { endBet } = await client.handleGameEvent((data) => data.endBet);
+                expect(endBet).toEqual(100);
+            });
+
+            it("should receive own bets", async () => {
+                // Act
+                client.emit(eventTypes.bet, payload);
+
+                // Assert
+                const { ownBets } = await client.handleGameEvent((data) => data.ownBets);
+                expect(ownBets).toEqual({ gameMode: GAME_MODE.LIGHTNING, numberOfRows: NUMBER_OF_ROWS.lightning });
+            });
+
+            it("should receive finish", async () => {
+                // Act
+                client.emit(eventTypes.bet, payload);
+
+                // Assert
+                const { finish } = await client.handleGameEvent((data) => data.finish);
+                expect(finish).toHaveProperty("roundId");
+                expect(finish).toHaveProperty("result");
+                expect(finish).toHaveProperty("settlementResult");
+                expect(finish).toHaveProperty("winAmount");
+                expect(finish).toHaveProperty("amount");
+                expect(finish).toHaveProperty("reachMaxWin");
+                expect(finish).toHaveProperty("time");
+                expect(finish).toHaveProperty("gameMode");
+                expect(finish).toHaveProperty("numberOfRows");
+                expect(finish).toHaveProperty("odds");
+                expect(finish.roundId).toBeGreaterThanOrEqual(1);
+                expect(finish.result.length).toEqual(NUMBER_OF_ROWS.lightning);
+                expect(finish.result.every((path) => path === 0 || path === 1)).toBeTruthy();
+                expect(finish.settlementResult.slotIndex).toBeGreaterThanOrEqual(0);
+                expect(finish.settlementResult.slotIndex).toBeLessThanOrEqual(NUMBER_OF_ROWS.lightning);
+                expect(typeof finish.settlementResult.multiplier).toBe("number");
+                expect(finish.winAmount).toBeGreaterThanOrEqual(0);
+                expect(finish.amount).toBeGreaterThanOrEqual(0);
+                expect(typeof finish.reachMaxWin).toBe("boolean");
+                expect(finish.gameMode).toEqual(GAME_MODE.LIGHTNING);
+                expect(finish.numberOfRows).toEqual(NUMBER_OF_ROWS.lightning);
+                expect(finish.odds[GAME_MODE.LIGHTNING][NUMBER_OF_ROWS.lightning]).toBeDefined();
+                expect(finish.odds[GAME_MODE.LIGHTNING][NUMBER_OF_ROWS.lightning].length).toBe(17);
+            });
+
+            it("should receive playerBet", async () => {
+                // Act
+                client.emit(eventTypes.bet, payload);
+
+                // Assert
+                const { playerBet } = await client.handleGameEvent((data) => data.playerBet);
+                expect(playerBet.name).toEqual("N***ser"); // mask name NormalUser
+                expect(playerBet.betAmount).toEqual(100);
+                expect(playerBet.winAmount).toBeGreaterThanOrEqual(0);
+                expect(playerBet.multiplier).toBeGreaterThanOrEqual(0);
+            });
+
+            it("should receive pf after finish", async () => {
+                // Act
+                client.emit(eventTypes.bet, payload);
+                await client.handleGameEvent((data) => data.finish);
+
+                // Assert
+                const { pf } = await client.handleGameEvent((data) => data.pf);
+                expect(pf.serverSeedHash).toBeDefined();
+                expect(typeof pf.serverSeedHash).toBe("string");
+            });
+        });
+        describe("when place bet with invalid data", () => {
+            const testCases = [
+                { payload: { amount: 100, clientSeed: "1234", isLightningMode: true }, expected: { errorCode: "SB1935" } },
+                {
+                    payload: { amount: 100, clientSeed: "1234", isLightningMode: true, lightningKey: "123456789" },
+                    expected: { errorCode: "SB1935" },
+                },
+                {
+                    payload: { amount: 100, clientSeed: "1234", isLightningMode: true, lightningKey: "" },
+                    expected: { errorCode: "SB1935" },
+                },
+                {
+                    payload: { amount: 100, clientSeed: "1234", isLightningMode: true, lightningKey: "12,54" },
+                    expected: { errorCode: "SB1935" },
+                },
+                {
+                    payload: { amount: 100, clientSeed: "1234", isLightningMode: true, lightningKey: "as@" },
+                    expected: { errorCode: "SB1935" },
+                },
+            ];
+            testCases.forEach(({ payload, expected }) => {
+                it(`should receive error notice`, async () => {
+                    // Act
+                    client.emit(eventTypes.bet, payload);
+
+                    // Assert
+                    const { endBet, notice } = await client.handleGameEvent((data) => data.notice);
+                    expect(endBet).toEqual(-1);
+                    expect(notice).toEqual(expected);
+                });
             });
         });
     });

@@ -1,5 +1,14 @@
 import SocketRouter from "../../../src/routers/socket-router";
 import RoundQuery from "../../../src/query-apis/round-query";
+import { LightningBoardAssigner } from "../../../src/lightning-feature/lightning-board-assigner";
+
+const mockAssignBoard = jest.fn();
+jest.mock("../../../src/lightning-feature/lightning-board-assigner", () => ({
+    LightningBoardAssigner: class {
+        assignBoard = mockAssignBoard;
+        constructor() {}
+    },
+}));
 
 describe("SocketRouter", () => {
     let socketRouter: SocketRouter;
@@ -9,6 +18,7 @@ describe("SocketRouter", () => {
     let mockSocketClient: any;
     let mockDefinition: any;
     let mockLogService: any;
+    let mockLightningBoardAssigner: any;
 
     beforeEach(() => {
         jest.clearAllMocks();
@@ -35,10 +45,10 @@ describe("SocketRouter", () => {
         mockLogService = {
             logError: jest.fn(),
         };
-
+        mockLightningBoardAssigner = new LightningBoardAssigner({ logService: {} as any });
         // Create instance and inject mocks
         // @ts-ignore
-        socketRouter = new SocketRouter({});
+        socketRouter = new SocketRouter({ lightningBoardAssigner: mockLightningBoardAssigner });
         socketRouter.roundQuery = mockRoundQuery;
         socketRouter.verify = mockVerify;
         socketRouter.gameData = mockGameData;
@@ -166,6 +176,115 @@ describe("SocketRouter", () => {
                 undefined, // payload.page is undefined
                 20
             );
+        });
+    });
+
+    describe("init", () => {
+        it("should register getLightningConfig event listener on socket client", () => {
+            // Arrange
+            const mockSocketClientWithOn = {
+                id: "socket123",
+                on: jest.fn(),
+            };
+
+            // Act
+            socketRouter.init(mockSocketClientWithOn);
+
+            // Assert
+            expect(mockSocketClientWithOn.on).toHaveBeenCalledWith("getLightningConfig", expect.any(Function));
+        });
+    });
+
+    describe("getLightningConfig", () => {
+        const mockPayload = { lightningKey: "test-key-123" };
+
+        beforeEach(() => {
+            mockGameData.gameConfigs = {
+                plinkoConfig: {
+                    enabledLightningMode: true,
+                },
+            };
+            mockGameData.realPlayers["socket123"] = {
+                UID: "player123",
+                profile: {
+                    name: "TestPlayer",
+                },
+            };
+        });
+
+        it("should return early when verification fails", async () => {
+            // Arrange
+            mockVerify.mockReturnValue(false);
+
+            // Act
+            await socketRouter.getLightningConfig(mockPayload);
+
+            // Assert
+            expect(mockVerify).toHaveBeenCalled();
+            expect(mockAssignBoard).not.toHaveBeenCalled();
+            expect(mockSocketClient.emit).not.toHaveBeenCalled();
+            expect(mockLogService.logError).not.toHaveBeenCalled();
+        });
+
+        it("should return early when lightning mode is not enabled", async () => {
+            // Arrange
+            mockVerify.mockReturnValue(true);
+            mockGameData.gameConfigs.plinkoConfig.enabledLightningMode = false;
+
+            // Act
+            await socketRouter.getLightningConfig(mockPayload);
+
+            // Assert
+            expect(mockVerify).toHaveBeenCalled();
+            expect(mockAssignBoard).not.toHaveBeenCalled();
+            expect(mockSocketClient.emit).not.toHaveBeenCalled();
+            expect(mockLogService.logError).not.toHaveBeenCalled();
+        });
+
+        it("should successfully retrieve and emit lightning board when verification passes", async () => {
+            // Arrange
+            const mockBoard = {
+                odds: [1.5, 2.0, 3.5, 2.0, 1.5],
+                pegMultipliers: [{ row: 5, column: 0, multiplier: 1.5 }],
+            };
+            const mockKey = "key-456";
+            mockVerify.mockReturnValue(true);
+            mockAssignBoard.mockReturnValue({
+                key: mockKey,
+                board: mockBoard,
+            });
+
+            // Act
+            await socketRouter.getLightningConfig(mockPayload);
+
+            // Assert
+            expect(mockVerify).toHaveBeenCalled();
+            expect(mockAssignBoard).toHaveBeenCalledWith("TestPlayer", "test-key-123");
+            expect(mockSocketClient.emit).toHaveBeenCalledWith("plinko", {
+                lightningConfig: {
+                    lightningKey: mockKey,
+                    lightningBoard: mockBoard,
+                },
+            });
+            expect(mockLogService.logError).not.toHaveBeenCalled();
+        });
+
+        it("should handle error during lightning board assignment and log it", async () => {
+            // Arrange
+            const mockError = new Error("Lightning board assignment failed");
+            mockVerify.mockReturnValue(true);
+            mockAssignBoard.mockImplementation(() => {
+                throw mockError;
+            });
+
+            // Act
+            await socketRouter.getLightningConfig(mockPayload);
+
+            // Assert
+            expect(mockVerify).toHaveBeenCalled();
+            expect(mockAssignBoard).toHaveBeenCalled();
+            expect(mockSocketClient.emit).not.toHaveBeenCalled();
+            expect(mockLogService.logError).toHaveBeenCalledWith(mockError);
         });
     });
 });

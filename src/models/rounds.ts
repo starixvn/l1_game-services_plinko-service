@@ -10,6 +10,14 @@ const settlementResultSchema = new mongoose.Schema(
     { _id: false }
 );
 
+const lightningBoardSchema = new mongoose.Schema(
+    {
+        odds: { type: [Number], required: true },
+        pegMultipliers: { type: [Object], required: true },
+    },
+    { _id: false }
+);
+
 const Schema = new mongoose.Schema({
     id: { type: Number, required: true }, // Round ID
     uid: { type: String, required: true },
@@ -32,8 +40,10 @@ const Schema = new mongoose.Schema({
     paid: { type: Boolean, default: false },
     appType: { type: Number, default: 0 },
 
-    gameMode: { type: Number, default: 0 }, // 0 - low, 1 - medium, 2 - high
+    gameMode: { type: Number, default: 0 }, // 0 - low, 1 - medium, 2 - high, 3 - lightning
     numberOfRows: { type: Number, default: 10 },
+    lightningKey: { type: String },
+    lightningBoard: lightningBoardSchema,
     result: { type: [Number], required: true }, // path, 0-left, 1-right
     settlementResult: settlementResultSchema,
     exchangeRateId: { type: Number, required: true },

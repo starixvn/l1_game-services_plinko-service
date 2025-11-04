@@ -139,7 +139,7 @@ describe("ProcessBetQueue", () => {
             await processBetQueue.proceedBet(mockPlayer, mockPayload);
 
             // Assert
-            expect(mockTrialModeConsumer.consume).toHaveBeenCalledWith(mockPlayer);
+            expect(mockTrialModeConsumer.consume).toHaveBeenCalledWith(mockPlayer, mockPayload);
             expect(mockProceedBet).not.toHaveBeenCalled();
             expect(mockGameData.ingame[mockPlayer.profile.name]).toBeUndefined();
         });
@@ -217,7 +217,7 @@ describe("ProcessBetQueue", () => {
             // Assert
             expect(mockCalculateCurrencyRate).toHaveBeenCalledWith(mockPlayer.session);
             expect(mockUpdateUserStakeLevel).toHaveBeenCalledWith(mockPlayer, 20, 2000);
-            expect(mockSettle).toHaveBeenCalledWith(mockPlayer, roundId, expectedRate);
+            expect(mockSettle).toHaveBeenCalledWith(mockPlayer, roundId, mockPayload);
             expect(mockPlaceBetPublisher.publishToUser).toHaveBeenCalledWith(mockPlayer.UID, {
                 ...expectedPlacingBetResult,
                 finish: expectedFinish,
@@ -287,7 +287,7 @@ describe("ProcessBetQueue", () => {
 
             // Assert
             expect(mockCalculateCurrencyRate).toHaveBeenCalledWith(mockPlayer.session);
-            expect(mockSettle).toHaveBeenCalledWith(mockPlayer, roundId, expectedRate);
+            expect(mockSettle).toHaveBeenCalledWith(mockPlayer, roundId, mockPayload);
             expect(mockExecuteInterceptorEvent).toHaveBeenCalledWith("afterSuccessEvent", [{}], {
                 player: mockPlayer,
                 bet: mockPayload,

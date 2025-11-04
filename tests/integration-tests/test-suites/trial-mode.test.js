@@ -4,6 +4,7 @@ import appConfigs from "../../../build/app-configs.IGT";
 import { socketOptionsFunc } from "../_stubs/test-data";
 import { initUserSession } from "../helper/helper";
 import { gameConfig } from "../_stubs/test-data";
+import { GAME_MODE, NUMBER_OF_ROWS } from "../../../build/constants";
 
 const socketOptions = socketOptionsFunc(appConfigs.hostingPort);
 
@@ -74,7 +75,7 @@ describe("place bet with trial mode", () => {
             expect(finish.reachMaxWin).toBe(false);
             expect(finish.gameMode).toEqual(payload.gameMode);
             expect(finish.numberOfRows).toEqual(payload.numberOfRows);
-            expect(finish.odds).toEqual(gameConfig.plinkoConfig.odds);
+            expect(finish.odds).toEqual({ ...gameConfig.plinkoConfig.odds, [GAME_MODE.LIGHTNING]: { [NUMBER_OF_ROWS.lightning]: [] } });
         });
     });
 });
