@@ -42,7 +42,7 @@ export default {
     },
     sentry: {
         sentryUrl: "",
-        logIdentifier: "plinko",
+        logIdentifier: "plinko-x",
         env: "DEV",
     },
     adminSecretKey: "asWDEerfOIdgsdqRTFabvmgh",

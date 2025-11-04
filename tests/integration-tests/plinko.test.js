@@ -1,4 +1,4 @@
-describe("Plinko integration tests", () => {
+describe("Plinko X integration tests", () => {
     require("./test-suites/check-connect.test");
     require("./test-suites/sign-in.test");
     require("./test-suites/in-game.test");

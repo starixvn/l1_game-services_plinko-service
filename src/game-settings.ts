@@ -1,6 +1,6 @@
 export default {
-    id: 145,
-    name: "Plinko",
+    id: 159,
+    name: "PlinkoX",
     durations: {
         wholeRound: 60,
     },

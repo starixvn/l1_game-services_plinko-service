@@ -22,7 +22,7 @@ export default {
     },
     enabledLogs: true,
     database: {
-        url: "mongodb://lmn_backend:LmnBackend@10.10.50.12:39103,10.10.50.13:39103,10.10.50.14:39103/?replicaSet=L1pppLocal&appName=plinko",
+        url: "mongodb://lmn_backend:LmnBackend@10.10.50.12:39103,10.10.50.13:39103,10.10.50.14:39103/?replicaSet=L1pppLocal&appName=plinko-x",
         options: {
             dbName: "minigame",
             useNewUrlParser: true,
@@ -31,7 +31,7 @@ export default {
     },
     sentry: {
         sentryUrl: "https://50e405ebce7003a0e1edbda2bf28b14c@sentry-k8s.lumigame.com/3",
-        logIdentifier: "plinko",
+        logIdentifier: "plinko-x",
         env: "LOCAL_2",
     },
     authenticateSettings: {

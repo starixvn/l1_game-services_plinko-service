@@ -15,7 +15,7 @@ export const run = async () => {
 
     const gameData = new GameData(gameSettings.durations.wholeRound);
     const container = new ContainerRegistry().register(appConfigs, definition, gameData);
-    const app = new Core.BaseGameApp("Plinko", appConfigs);
+    const app = new Core.BaseGameApp("Plinko X", appConfigs);
     await app.run();
     await app.startGame(container);
 };

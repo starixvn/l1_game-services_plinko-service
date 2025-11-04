@@ -31,7 +31,7 @@ describe("in game", () => {
         const { gameConfigs } = await client.handleGameEvent((data) => data.gameConfigs);
 
         // Assert
-        expect(gameConfigs.gameId).toBe(145);
+        expect(gameConfigs.gameId).toBe(159);
         expect(gameConfigs.odds).toEqual({
             0: {
                 8: [1, 2, 3, 4, 5, 6, 7, 8, 9],

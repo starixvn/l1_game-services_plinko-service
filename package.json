@@ -1,5 +1,5 @@
 {
-    "name": "plinko-service",
+    "name": "plinko-x-service",
     "version": "1.0.0",
     "description": "",
     "main": "./build/app.js",

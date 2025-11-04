@@ -22,7 +22,7 @@ export default {
     },
     enabledLogs: true,
     database: {
-        url: "mongodb://lmn_backend:M7K4ttH%2AtZ3ml%3F%29%7CA%5DjN4%3FLBhwF%266IO%3C@10.146.34.26:39110,10.146.34.27:39110,10.146.34.30:39110,10.146.34.28:39110/?replicaSet=SabaMain&appName=plinko",
+        url: "mongodb://lmn_backend:M7K4ttH%2AtZ3ml%3F%29%7CA%5DjN4%3FLBhwF%266IO%3C@10.146.34.26:39110,10.146.34.27:39110,10.146.34.30:39110,10.146.34.28:39110/?replicaSet=SabaMain&appName=plinko-x",
         options: {
             dbName: "minigame",
             useNewUrlParser: true,
@@ -31,7 +31,7 @@ export default {
     },
     sentry: {
         sentryUrl: "http://50e405ebce7003a0e1edbda2bf28b14c@sentrypro-sc.ops-klprod.gamora.prod/3",
-        logIdentifier: "plinko",
+        logIdentifier: "plinko-x",
         env: "PROD",
     },
     authenticateSettings: {

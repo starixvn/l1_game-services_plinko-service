@@ -22,7 +22,7 @@ export default {
     },
     enabledLogs: true,
     database: {
-        url: "mongodb://lmn_backend:LmnBackend%40517@172.16.4.111:32301/?replicaSet=SabaL2SIT&appName=plinko",
+        url: "mongodb://lmn_backend:LmnBackend%40517@172.16.4.111:32301/?replicaSet=SabaL2SIT&appName=plinko-x",
         options: {
             dbName: "minigame",
             useNewUrlParser: true,
@@ -31,7 +31,7 @@ export default {
     },
     sentry: {
         sentryUrl: "http://8eb9632f2663e57c838ec83febbee14f@sentrysc.ops-sit.nebula.sit/4",
-        logIdentifier: "plinko",
+        logIdentifier: "plinko-x",
         env: "SIT_1",
     },
     authenticateSettings: {

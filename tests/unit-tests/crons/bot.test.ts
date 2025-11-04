@@ -29,7 +29,7 @@ describe("Bot", () => {
             gameConfigs: {
                 bot_maxbet: 100,
                 bot_minbet: 10,
-                name: "Plinko",
+                name: "Plinko X",
                 plinkoConfig: {
                     odds: {
                         [GAME_MODE.LOW]: {
