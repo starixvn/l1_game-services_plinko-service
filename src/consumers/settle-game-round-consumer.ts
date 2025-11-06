@@ -29,6 +29,7 @@ export default class SettleGameRoundConsumer extends BaseSettleGameRoundConsumer
                 gameMode,
                 numberOfRows,
                 odds,
+                lightningBoard: board,
             };
         }
         return null;

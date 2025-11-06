@@ -6,6 +6,7 @@ export type PlinkoConfig = {
 export type SettlementResult = {
     slotIndex: number;
     multiplier: number;
+    reachedPegMultipliers?: PegMultiplier[];
 };
 export type PlinkoRound = {
     id: number;

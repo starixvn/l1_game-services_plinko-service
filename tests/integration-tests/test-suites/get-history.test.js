@@ -88,7 +88,7 @@ describe("when get history", () => {
                 },
                 roundId: 1,
                 clientSeed: "1234",
-                settlementResult: { slotIndex: 4, multiplier: 5 },
+                settlementResult: { slotIndex: 4, multiplier: 5, reachedPegMultipliers: [] },
                 lightningKey: "",
             },
         ];

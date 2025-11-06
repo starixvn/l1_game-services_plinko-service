@@ -301,6 +301,7 @@ describe("SettleGameRoundConsumer", () => {
                 gameMode: 3,
                 numberOfRows: 16,
                 odds: mockRoundData.odds,
+                lightningBoard: mockBoard,
             });
         });
     });

@@ -164,6 +164,7 @@ describe("place bet and settle", () => {
                 expect(finish).toHaveProperty("gameMode");
                 expect(finish).toHaveProperty("numberOfRows");
                 expect(finish).toHaveProperty("odds");
+                expect(finish).toHaveProperty("lightningBoard");
                 expect(finish.roundId).toBeGreaterThanOrEqual(1);
                 expect(finish.result.length).toEqual(NUMBER_OF_ROWS.lightning);
                 expect(finish.result.every((path) => path === 0 || path === 1)).toBeTruthy();
@@ -177,6 +178,10 @@ describe("place bet and settle", () => {
                 expect(finish.numberOfRows).toEqual(NUMBER_OF_ROWS.lightning);
                 expect(finish.odds[GAME_MODE.LIGHTNING][NUMBER_OF_ROWS.lightning]).toBeDefined();
                 expect(finish.odds[GAME_MODE.LIGHTNING][NUMBER_OF_ROWS.lightning].length).toBe(17);
+                expect(finish.lightningBoard).toHaveProperty("odds");
+                expect(finish.lightningBoard.odds.length).toBe(17);
+                expect(finish.lightningBoard).toHaveProperty("pegMultipliers");
+                expect(finish.lightningBoard.pegMultipliers.length).toBeGreaterThanOrEqual(3);
             });
 
             it("should receive playerBet", async () => {

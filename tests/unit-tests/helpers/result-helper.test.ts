@@ -88,11 +88,12 @@ describe("Result Helper", () => {
             const pegMultipliers = [{ row: 5, column: 3, multiplier: 5 }];
 
             // Act
-            const { slotIndex, multiplier } = getSettlementResult(resultArray, odds, pegMultipliers);
+            const { slotIndex, multiplier, reachedPegMultipliers } = getSettlementResult(resultArray, odds, pegMultipliers);
 
             // Assert
             expect(slotIndex).toBe(9);
             expect(multiplier).toBe(50); // odds[9] * extraMultiplier;
+            expect(reachedPegMultipliers).toEqual(pegMultipliers);
         });
 
         it("should return the correct slot index and multiplier when no peg multipliers", () => {
@@ -101,11 +102,12 @@ describe("Result Helper", () => {
             const odds = { 0: 1, 1: 2, 2: 3, 3: 4, 4: 5, 5: 6, 6: 7, 7: 8, 8: 9, 9: 10, 10: 11, 11: 12, 12: 13, 13: 14, 14: 15, 15: 16 };
 
             // Act
-            const { slotIndex, multiplier } = getSettlementResult(resultArray, odds);
+            const { slotIndex, multiplier, reachedPegMultipliers } = getSettlementResult(resultArray, odds);
 
             // Assert
             expect(slotIndex).toBe(9);
             expect(multiplier).toBe(10);
+            expect(reachedPegMultipliers).toBeUndefined();
         });
     });
 });

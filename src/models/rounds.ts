@@ -6,6 +6,7 @@ const settlementResultSchema = new mongoose.Schema(
     {
         slotIndex: { type: Number, required: true },
         multiplier: { type: Number, required: true },
+        reachedPegMultipliers: { type: [Object] },
     },
     { _id: false }
 );
