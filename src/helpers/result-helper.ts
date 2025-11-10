@@ -1,5 +1,6 @@
 import { NUMBER_OF_ROWS } from "../constants";
 import { PegMultiplier, SettlementResult } from "../types";
+import { roundDownTo } from "./number-helper";
 
 export const generateResult = (finalHash: string): number[] => {
     const result: number[] = [];
@@ -38,7 +39,7 @@ export const getSettlementResult = (
 
     return {
         slotIndex,
-        multiplier: parseFloat(totalMultiplier.toFixed(3)),
+        multiplier: roundDownTo(totalMultiplier),
         reachedPegMultipliers,
     };
 };

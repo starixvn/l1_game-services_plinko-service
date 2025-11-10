@@ -4,6 +4,7 @@ import * as path from "path";
 import { LightningBoard } from "../types";
 import { logger } from "sc-common";
 import { generateRandomString, isValidLightningKey } from "../helpers/string-helper";
+import { roundDownTo } from "../helpers/number-helper";
 
 const TOTAL_BOARDS = 99_900;
 const BATCH_SIZE = 500;
@@ -82,7 +83,7 @@ export class LightningBoardAssigner {
         return board;
     }
 
-    assignBoard(playerName: string, lightningKey?: string) {
+    assignBoard(playerName: string, lightningKey?: string): { key: string; board: LightningBoard | null } {
         let key = lightningKey;
         if (!key || !isValidLightningKey(key)) {
             key = this.getPlayerKey(playerName);
@@ -90,6 +91,13 @@ export class LightningBoardAssigner {
         this.playerToKey.set(playerName, key);
         const boardIndex = this.getBoardIndexFromKey(key);
         const board = this.getBoardFromIndex(boardIndex);
-        return { key, board };
+        if (board) {
+            const roundedBoard = {
+                ...board,
+                odds: board?.odds?.map((odds) => roundDownTo(odds)) || [],
+            };
+            return { key, board: roundedBoard };
+        }
+        return { key, board: null };
     }
 }
