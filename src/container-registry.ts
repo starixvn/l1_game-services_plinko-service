@@ -14,6 +14,7 @@ import { Results, Rounds } from "./models";
 import RoundQuery from "./query-apis/round-query";
 import SocketRouter from "./routers/socket-router";
 import { LightningBoardAssigner } from "./lightning-feature/lightning-board-assigner";
+import GameStatusPublisher from "./publishers/game-status-publisher";
 
 export default class ContainerRegistry extends Core.ContainerRegistry {
     register(appConfigs: any, definition: Core.GameDefinition, gameData: Core.GameData) {
@@ -51,6 +52,7 @@ export default class ContainerRegistry extends Core.ContainerRegistry {
 
         this.container.register({
             userSignInPublisher: asClass(Table.EventPublishers.TableUserSignInPublisher).singleton(),
+            gameStatusPublisher: asClass(GameStatusPublisher).singleton(),
         });
     }
 
