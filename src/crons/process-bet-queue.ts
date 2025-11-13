@@ -18,11 +18,17 @@ export default class ProcessBetQueue extends BaseProcessBetQueue {
     }
 
     async proceedBet(player: any, payload: PlaceBetPayload) {
-        if (payload.amount === 0) {
-            this.trialModeConsumer.consume(player, payload);
-        } else {
-            this.gameData.roundId++;
-            await super.proceedBet(player, payload);
+        try {
+            if (payload.amount === 0) {
+                this.trialModeConsumer.consume(player, payload);
+            } else {
+                const roundId = this.gameData.roundId + 1;
+                this.gameData.roundId = roundId;
+                payload.roundId = roundId;
+                await super.proceedBet(player, payload);
+            }
+        } catch (error) {
+            this.logService.logError(error);
         }
         this.resetBetData(player);
     }
@@ -39,7 +45,7 @@ export default class ProcessBetQueue extends BaseProcessBetQueue {
         return {
             amount: payload.amount,
             gameId: this.definition.id,
-            gameRoundId: this.gameData.roundId,
+            gameRoundId: payload.roundId ?? this.gameData.roundId,
             choiceId: getChoiceId(payload.gameMode, payload.numberOfRows),
             freeBet: false,
             clientSentTime: payload.time ?? new Date(),

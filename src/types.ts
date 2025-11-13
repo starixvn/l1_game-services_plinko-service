@@ -67,6 +67,7 @@ export type PlaceBetPayload = {
     freeBet?: boolean;
     m?: string;
     mode?: string;
+    roundId?: number;
 };
 
 export type PegMultiplier = {
